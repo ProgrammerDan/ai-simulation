@@ -4,9 +4,22 @@ import java.text.*;
 
 /**
  * This is the simulation map object, it encapsulates a number of ideas including the bounding boxes of lines, and the concept of "proper path".
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 2010
+ * @version 1.0-mvn March 23, 2013
+ *
+ * TODO: refactor main() as test
+ * TODO: refactor to use logging framework
  */
 public class SimulationMap
 {
+	/**
+	 * Simple test validation of the map loader.
+	 *
+	 * @param 	args 	The map to load, excluding path and extension, followed by number of attempts,
+	 *					and steps to take in each attempt.
+	 */
 	public static void main(String[] args)
 	{
 		/*SimpleLine[] walls = new SimpleLine[6];
@@ -25,7 +38,7 @@ public class SimulationMap
 
 		SimulationMap map = new SimulationMap(walls, paths);*/
 
-		SimulationMap map = new SimulationMap("./mazes/" + args[0] + ".maze");//Curvy.maze");
+		SimulationMap map = new SimulationMap("./mazes/" + args[0] + ".maze");
 
 		double x =  map.getStartX();
 		double y =  map.getStartY();
@@ -47,11 +60,7 @@ public class SimulationMap
 		{
 
 			System.out.println("Using smooth random walk model to construct probabilistic baseline");
-			//String line = "";
 
-			//BufferedReader in = new BufferedReader(new InputStreamReader( System.in ));
-
-			//while (!line.equalsIgnoreCase("exit"))
 			long step = 0;
 
 			double[] mapex = map.mapExtent();
@@ -95,10 +104,6 @@ public class SimulationMap
 
 				while (x >= mapex[0] && x <= mapex[1] && y >= mapex[2] && y <= mapex[3] && step < maxsteps && pathProg < 1.0)
 				{
-					//System.out.println();
-					//System.out.println(map.drawMap(-25.0, 25.0, -10.0, 10.0, x, y, vx, vy, 1.0));
-					//line = in.readLine();
-
 					vr = (mrho * Math.random() );
 					vt = vt + (mtheta * Math.random() - (mtheta / 2.0) );
 
@@ -224,7 +229,17 @@ public class SimulationMap
 		}
 	}
 
-	private static double computeStepFitness(double progressFitness, double simLengthCap) // we only call when we've reached the limit. Otherwise no decay!
+	/**
+	 * This functions is used to compute the "fitness" of motion along the map optimal path,
+	 * after all steps complete.
+	 *
+	 * We only call when we've reached the limit. Otherwise no decay!
+	 *
+	 * @param	progressFitness	The current progress
+	 * @param	simLengthCap	Simulation length cap
+	 * @return					Double value of the current fitness
+	 */
+	private static double computeStepFitness(double progressFitness, double simLengthCap)
 	{
 		double b = 10.0 / simLengthCap;
 
@@ -239,6 +254,15 @@ public class SimulationMap
 			return sig; // we are not making good enough progress.
 	}
 
+	/**
+	 * Normalize the distances to objects based on sight ranges and min, max values of sight ability.
+	 *
+	 * @param	distances	distances to objects
+	 * @param	sightranges	sight ranges
+	 * @param	maxvalue	value indicating nothing seen
+	 * @param	minvalue	value indicating starting point
+	 * @return				normalized distances to seen (or if max, not seen) objects
+	 */
 	public static double[] normalizeSight(double[] distances, double[] sightranges, double maxvalue, double minvalue)
 	{
 		if (distances.length != sightranges.length)
