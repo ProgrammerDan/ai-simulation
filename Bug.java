@@ -40,10 +40,9 @@ public class Bug extends Position
 
 	// outputs
 	public static int VEL = 0;
-	public static int LEFT = 1;
-	public static int RIGHT = 2;
+	public static int DELTA = 1;
 
-	public static int OUTPUTS = 3;
+	public static int OUTPUTS = 2;
 
 	private double[] outputStore;
 	private int[] outputClasses;
@@ -192,6 +191,26 @@ public class Bug extends Position
 			}
 		}
 	}
+
+	/** This function basically takes an image of the active brain of this bug, to see how it has changed over use.
+	 *  One thought was to capture the "brain" at various junctures and save it, to analyze at a later point.
+	 *  Could do statistical analysis, such as % changed, etc.
+	 *  Another thought is a heatmap visualization of the brain ... not sure how to go about it but have a few ideas.
+	 *
+	 **/
+	/*public Chromosome capture()
+	{
+		Chromosome matureBrain = new Chromosome();
+
+		double[] brainfactors = brain.getNetworkFactors();
+
+		for (int a = 0; a < brainfactors.length; a++)
+		{
+			matureBrain.addGene(
+		}
+	}*/
+	// Note: turns out that the weights inside a mature brain can get larger than is possible to encode in my current scheme -- the "max weight"
+	//       is currently 10 inside the brains ... simplest would be to "expand" a chromosome on start to fit within this maximum value.
 
 	// Puts together the "brain" for this bug based on the gene's in the chromosome
 /*	private void build()
@@ -442,14 +461,29 @@ public class Bug extends Position
 		return _a - .5;
 	}
 
+	private double unfit(double _a)
+	{
+		return _a + .5;
+	}
+
 	private double tin(double _a)
 	{
 		return _a * .1;
 	}
 
+	private double untin(double _a)
+	{
+		return _a / .1;
+	}
+
 	private double mid(double _a)
 	{
 		return _a * .5;
+	}
+
+	private double unmid(double _a)
+	{
+		return _a / .5;
 	}
 
 	// Step the "brain" and apply the outputs to the velocity and direction.
@@ -463,7 +497,7 @@ public class Bug extends Position
 
 		velocity = outputStore[VEL];
 
-		direction += ( outputStore[RIGHT] - outputStore[LEFT] );
+		direction += 2.0 * outputStore[DELTA]; // 2 times output b/c the original formula called for a union of two such outputs, which could be max 2 times any one.
 		direction = direction % 360;
 
 		if (direction < 0)

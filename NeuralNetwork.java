@@ -100,12 +100,61 @@ public class NeuralNetwork
 	private double alpha; // learning
 	private double phi;   // forgetting
 
+	private int factorSize;
+
+	/** This debug function returns an array of all the weights and factors in the network at the time of the call. **/
+	public double[] getNetworkFactors()
+	{
+		double[] nf = new double[factorSize];
+
+		nf[0] = alpha;
+		nf[1] = phi;
+
+		// inputs.
+		int nfi = 2;
+
+		for (int k = 0; k < nInputs; k ++)
+		{
+			double[] inweights = inputLayer[k].getInWeights(); // weights.
+			for (int j = 0; j < inweights.length; j ++)
+				nf[ nfi++ ] = inweights[j];
+
+			nf[ nfi++ ] = inputLayer[k].getTheta(); // activation.
+		}
+
+		for (int k = 0; k < nHidden; k ++)
+		{
+			for (int i = 0; i < hiddenLayers[k].length; i++)
+			{
+				double[] inweights = hiddenLayers[k][i].getInWeights();
+				for (int j = 0; j < inweights.length; j++)
+					nf[ nfi++ ] = inweights[j];
+
+				nf[ nfi++ ] = hiddenLayers[k][i].getTheta();
+			}
+		}
+
+		for (int k = 0; k < nOutputs; k ++)
+		{
+			double[] inweights = outputLayer[k].getInWeights();
+			for (int j = 0; j < inweights.length; j ++)
+				nf[ nfi++ ] = inweights[j];
+
+			nf[ nfi++ ] = outputLayer[k].getTheta();
+		}
+
+
+		return nf;
+	}
+
 	private boolean debug; // debugging this network?
 	private PrintWriter debugOut;
 
 	// Build network.
 	public NeuralNetwork(int _nInputs, int _nHidden, int _sizeHidden, int _nOutputs, double _alpha, double _phi)
 	{
+		factorSize = 2; // alpha and phi.
+
 		nInputs = (_nInputs < 0) ? -_nInputs: _nInputs;
 		nHidden = (_nHidden < 0) ? -_nHidden: _nHidden;
 		sizeHidden = (_sizeHidden < 0) ? -_sizeHidden: _sizeHidden;
@@ -210,6 +259,9 @@ public class NeuralNetwork
 			}
 
 			if (debug) debugOut.println("= success");
+
+			factorSize += 2; // weight, threshold.
+
 			return true;
 		}
 		else
@@ -303,6 +355,9 @@ public class NeuralNetwork
 						cLayer ++; // done this layer, move on to next hidden layer or output layer.
 						cHidden = 0;
 					}
+
+					factorSize += _weights.length + 1; // num weights + threshold.
+
 					return true;
 				}
 			}
@@ -384,6 +439,8 @@ public class NeuralNetwork
 					{
 						cLayer ++; // done this layer, done the network!
 					}
+					factorSize += _weights.length + 1; // num weights + threshold.
+
 					return true;
 				}
 			}

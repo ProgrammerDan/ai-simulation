@@ -87,6 +87,21 @@ public class Chromosome
 		return false;
 	}
 
+	// append a gene to the end of this chromosome
+	public boolean addGene(double toAdd, int size)
+	{
+		if (toAdd < 0.0 || toAdd >= 1.0)
+		{
+			return false;
+		}
+		else
+		{
+			genes.add(new Gene(toAdd, size));
+			nGenes ++;
+			return true;
+		}
+	}
+
 	// get a specific gene from the chromosome, or null if index is out of bounds.
 	public Gene getGene(int _idx)
 	{
@@ -306,6 +321,30 @@ class Gene
 		}
 	}
 
+	// Builds a gene based on a double value.
+	public Gene(double geneval, int size)
+	{
+		geneValues = new boolean[size];
+
+		geneval = Math.abs(geneval);
+		if (geneval >= 1.0) geneval = geneval - Math.floor(geneval);
+
+		for (int a = 0; a < size; a++)
+		{
+			geneval *= 2.0
+
+			if (geneval >= 1.0)
+			{
+				geneValues[a] = true;
+				geneval -= 1.0;
+			}
+			else
+			{
+				geneValues[a] = false;
+			}
+		}
+	}
+
 	// Builds a gene based on an encoded string (for compactness in storage).
 	public Gene(String cod, int enc)
 	{
@@ -327,7 +366,7 @@ class Gene
 			{
 				int k = l % 2;
 
-				if (!(b == 0 && i < ((7 - leftover)%7)))
+				if (!(b == 0 && i < ( ( 7 - leftover) % 7 ) ))
 				{
 					if (k == 1)
 						geneValues[a++] = true;

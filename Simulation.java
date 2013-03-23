@@ -424,7 +424,7 @@ public class Simulation extends JPanel implements MouseListener
 		ActorPath = new GeneralPath[BUGS][MAZES];
 		ActorPathLength = new double[BUGS][MAZES];
 
-		ActorEyes = new double[] {15.0, -15.0}; // bug looks ahead.
+		ActorEyes = new double[] {15.0, 14.0,13.0,12.0,11.0,10.0,-10.0,-11.0,-12.0,-13.0,-14.0, -15.0}; // bug looks ahead.
 
 		MazeMinFitness = new double[MAZES];
 		MazeMaxFitness = new double[MAZES];
@@ -1272,16 +1272,16 @@ public class Simulation extends JPanel implements MouseListener
 		return ( ( getDistance(_x1, _y1, _x2, _y2) <= 2.0 ) ? true : false );
 	}
 
-	public int bug_inputs = 4;
+	public int bug_inputs = 24;
 	public int bug_hiddenlayers = 10;//5;
-	public int bug_hiddenlayersize = 14;//7;
-	public int[] bug_inputclasses = new int[]{0,1,0,1};
-	public int[] bug_output_classes = new int[]{1,0,0};
+	public int bug_hiddenlayersize = 30;//7;
+	public int[] bug_inputclasses = new int[]{0,1,0,1 ,0,1,0,1,0,1,0,1,0,1 ,0,1,0,1,0,1,0,1,0,1};
+	public int[] bug_output_classes = new int[]{1,0};
 	public int bug_chromo_size = Bug.estimateChromosome(bug_inputs, bug_hiddenlayersize, bug_hiddenlayers);
 
 	public Chromosome newGenome()
 	{
-		return Chromosome.randomChromosome(bug_chromo_size, 20);//295,20);//4, 20);
+		return Chromosome.randomChromosome(bug_chromo_size, 28);//295,20);//4, 20);
 	}
 
 	public Chromosome newGenome(String chromo)

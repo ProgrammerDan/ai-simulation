@@ -13,6 +13,7 @@ public class Neuron
 {
 	private Neuron[] inList;
 	private double[]  inListWeight;
+	public double[] getInWeights() { return inListWeights; } // investigative function.
 	private Neuron[] outList;
 
 	private int inputs;
@@ -20,6 +21,7 @@ public class Neuron
 
 	private double[] inputValue;
 	private double outputValue;
+	public double getOutputValue() { return outputValue; }; // investigative function.
 
 	private int inCount;
 	private int outCount;
@@ -28,6 +30,7 @@ public class Neuron
 	private double phi; // forgetting factor
 
 	private double theta; // activation level
+	public double getTheta() { return theta; } // investigative function.
 
 	private boolean debug; // debugging this node?
 	private PrintWriter debugOut;
