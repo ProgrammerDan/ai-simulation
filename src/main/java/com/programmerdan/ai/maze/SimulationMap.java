@@ -283,6 +283,11 @@ public class SimulationMap
 		return normalized;
 	}
 
+	/**
+	 * Iterates over all wall lines and determines the coordinate extent of the map.
+	 *
+	 * @return	Array of map extents in the order min x, max x, min y, max y
+	 */
 	public double[] mapExtent()
 	{
 		double minx, miny, maxx, maxy;
@@ -304,10 +309,26 @@ public class SimulationMap
 		return new double[] { minx, maxx, miny, maxy };
 	}
 
+	/**
+	 * A utility method used to draw maps as string (for debugging).
+	 *
+	 * @param	minx	Map's min X coord
+	 * @param	maxx	Map's max X coord
+	 * @param	miny	Map's min Y coord
+	 * @param	maxy	Map's max Y coord
+	 * @param	x		"Player" X coord location
+	 * @param   y		"Player" Y coord location
+	 * @param	vx		"Player" X velocity
+	 * @param	vy		"Player" Y velocity
+	 * @param	unit	Unit of distance
+	 *
+	 * @return			A string representation of the map
+	 */
 	public String drawMap(double minx, double maxx, double miny, double maxy, double x, double y, double vx, double vy, double unit)
 	{
 		StringBuffer mapout = new StringBuffer();
 
+		// TODO: Why does this duplicate mapExtent? Instead of accepting extents, just calculate using mapExtent()
 		// doublecheck that range fits extent.
 		for (SimpleLine wall : wallLines)
 		{
@@ -375,17 +396,29 @@ public class SimulationMap
 		return mapout.toString();
 	}
 
+	/** The lines of the wall */
 	private SimpleLine[] wallLines;
+	/** Path lines, or, the solution to the map */
 	private SimpleLine[] pathLines;
+	/** The map title */
 	private String title;
 
+	/**
+	 * Getter for the title
+	 * TODO: Let's use standard getter/setter pairs, please.
+	 *
+	 * @return	The title as a {@link String}
+	 */
 	public String title()
 	{
 		return title;
 	}
 
 	/**
-	 * For internal unit tests.
+	 * For internal unit tests, instantiates the map with an arbitrary set of walls and paths
+	 *
+	 * @param	testWalls	The walls as {@link SimpleLine}s.
+	 * @param	testPaths	The paths as {@link SimpleLine}s.
 	 */
 	private SimulationMap(SimpleLine[] testWalls, SimpleLine[] testPaths)
 	{
@@ -394,29 +427,31 @@ public class SimulationMap
 	}
 
 	/**
-	 * The public facing constructor; builds a map object from a list file of map values.
+	 * Simulation Map's constructor; builds a map object from a file of map values.
+	 *
+	 * File format:
+	 * Map Title
+	 *  numWalls
+	 *  wallx1,wally1,wallx2,wally2
+	 *  ...
+	 *  wallxn,wallyn,wallxn,wallyn
+	 *  numPaths
+	 *  pathx1,pathy1
+	 *  ...
+	 *  pathxn,pathyn
+	 *  nearPath
+	 *  farPath
+	 *
+	 * @param	String	mapFile	The map file to load. If file is invalid, fails.
 	 */
 	public SimulationMap(String mapFile)
 	{
+		// TODO: Split up this method a bit. Why is so much in the constructor?
 		try
 		{
 			File map = new File(mapFile);
 
 			BufferedReader br = new BufferedReader( new FileReader( map ) );
-
-			/* File Format:
-			 * Map Title
-			 *  numWalls
-			 *  wallx1,wally1,wallx2,wally2
-			 *  ...
-			 *  wallxn,wallyn,wallxn,wallyn
-			 *  numPaths
-			 *  pathx1,pathy1
-			 *  ...
-			 *  pathxn,pathyn
-			 *  nearPath
-			 *  farPath
-			 */
 
 			String  line = br.readLine();
 
@@ -475,11 +510,17 @@ public class SimulationMap
 		}
 	}
 
+	/** The last distances to nearby walls detected by {@link nearestWalls(SimpleLine[])} */
 	public double[] lastNear = null;
+	/** The last wall IDs detected by {@link nearestWalls{SimpleLine[])} */
 	public int[] lastWallIdx = null;
 
 	/**
-	 * Give a series of rays radiating from a central point, returns the distance to the nearest wall. If no wall is intersected within sight distance, returns Double.MAX_VALUE for that ray.
+	 * Give a series of rays radiating from a central point, returns the distance to the nearest wall.
+	 * If no wall is intersected within sight distance, returns Double.MAX_VALUE for that ray.
+	 *
+	 * @param	rays	The "rays" to find wall intersections on.
+	 * @return			A double[] of the same size as rays, containing distances to the nearest walls.
 	 */
 	public double[] nearestWalls(SimpleLine[] rays)
 	{
