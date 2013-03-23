@@ -327,7 +327,7 @@ class Gene
 			{
 				int k = l % 2;
 
-				if (!(b == 0 && i < ((7 - leftover)%7)))
+				if (!(b == 0 && i < ( ( 7 - leftover) % 7 ) ))
 				{
 					if (k == 1)
 						geneValues[a++] = true;

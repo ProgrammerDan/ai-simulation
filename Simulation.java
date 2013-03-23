@@ -1276,12 +1276,12 @@ public class Simulation extends JPanel implements MouseListener
 	public int bug_hiddenlayers = 10;//5;
 	public int bug_hiddenlayersize = 14;//7;
 	public int[] bug_inputclasses = new int[]{0,1,0,1};
-	public int[] bug_output_classes = new int[]{1,0,0};
+	public int[] bug_output_classes = new int[]{1,0};
 	public int bug_chromo_size = Bug.estimateChromosome(bug_inputs, bug_hiddenlayersize, bug_hiddenlayers);
 
 	public Chromosome newGenome()
 	{
-		return Chromosome.randomChromosome(bug_chromo_size, 20);//295,20);//4, 20);
+		return Chromosome.randomChromosome(bug_chromo_size, 28);//295,20);//4, 20);
 	}
 
 	public Chromosome newGenome(String chromo)
