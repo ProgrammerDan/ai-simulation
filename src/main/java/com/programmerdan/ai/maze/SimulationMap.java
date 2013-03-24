@@ -556,6 +556,15 @@ public class SimulationMap
 		return near;
 	}
 
+	/**
+	 * Simple test function for vector intersection against a wall.
+	 *
+	 * @param	x1	The start X coord of the vector
+	 * @param	y1	The start Y coord of the vector
+	 * @param	x2	The end X coord of the vector
+	 * @param	y2	The end Y coord of the vector
+	 * @return		True if the vector intersects any wall, false otherwise.
+	 */
 	public boolean intersectsWall(double x1, double y1, double x2, double y2)
 	{
 		for (int i = 0; i < wallLines.length; i++)
@@ -567,6 +576,11 @@ public class SimulationMap
 		return false;
 	}
 
+	/**
+	 * Accessor of last wall IDs detected by {@link nearestWalls{SimpleLine[])}
+	 *
+	 * @return	The array of wall IDs
+	 */
 	public int[] lastWallIdx()
 	{
 		return lastWallIdx;
@@ -574,6 +588,10 @@ public class SimulationMap
 
 	/**
 	 * Tests if this proposed movement vector passes through a wall.
+	 * TODO: This duplicates in inverse {@link intersectsWall}
+	 *
+	 * @param	SimpleLine	The vector to test against all walls.
+	 * @return				True if vector doesn't intersect any walls, false if it does.
 	 */
 	public boolean canMove(SimpleLine vector)
 	{
@@ -586,11 +604,18 @@ public class SimulationMap
 		return true;
 	}
 
-	private double wallBuffer = 0.70711;//05;
+	/** Wall buffer -- "constant" parameter saying how close to the wall a movement vector is allowed. */
+	private double wallBuffer = 0.70711;
+	/** Adjustment factor to prevent accidental wall overtake */
 	private double adjfactor = 0.1;
 
 	/**
 	 * Returns a "shortened" vector based on wall location, useful to foreshorten vectors that would otherwise pass through walls.
+	 *
+	 * TODO: some error conditions are ignored. This should throw exceptions where appropriate.
+	 *
+	 * @param	vector	The vector to shorten
+	 * @return			The shortened vector (a new SimpleLine)
 	 */
 	public SimpleLine fixMove(SimpleLine vector)
 	{
@@ -669,6 +694,15 @@ public class SimulationMap
 		return new SimpleLine(x1, y1, x5, y5);
 	}
 
+	/**
+	 * Fix a motion vector so that it doesn't pass through walls.
+	 *
+	 * @param	x		The origin of the vector in X coords
+	 * @param	y		The origin of the vector in Y coords
+	 * @param	vector	The vector delta coords {x, y}
+	 * @return			The modified vector deltas {x, y}
+	 * @see				{@link fixMove}
+	 */
 	public double[] fixMoveV(double x, double y, double[] vector)
 	{
 		SimpleLine fixed = fixMove(new SimpleLine(x, y, x + vector[0], y + vector[1]));
@@ -677,7 +711,14 @@ public class SimulationMap
 	}
 
 	/**
-	 * Returns how close to the path this point is.
+	 * Returns how close to the path this point is (closest straightline distance).
+	 *
+	 * TODO: Evaluate efficiency and adjust
+	 *
+	 * @param	x1	The point in X coords to compare against
+	 * @param	y1	The point in Y coords to compare against
+	 *
+	 * @return		The distance, or {@link Double.MAX_VALUE} if nothing nearby.
 	 */
 	public double distToPath(double x1, double y1)
 	{
@@ -702,6 +743,11 @@ public class SimulationMap
 
 	/**
 	 * Returns the relative path index this point is closest to.
+	 *
+	 * @param	x1	The point's X coord
+	 * @param	y1	The point's Y coord
+	 *
+	 * @return		The ratio of nearest index over number of pathLines.
 	 */
 	public double distToPathIdx(double x1, double y1)
 	{
@@ -783,16 +829,27 @@ public class SimulationMap
 		return near;
 	}
 */
+	/** Nearness threshold for relative distance computation */
 	private double pathNearThreshold = 1.75;
+	/**
+	 * Accessor for {@link pathNearThreshold}
+	 *
+	 * @return	The pathNearThreshold;
+	 */
 	public double getNearThreshold()
 	{
 		return pathNearThreshold;
 	}
 
+	/** Far threshold for relative distance computation */
 	private double pathFarThreshold = 15.0;
 
 	/**
-	 * Returns the relative path progress.
+	 * Returns the relative path progress ( a number in [0.0, 1.0] )
+	 *
+	 * @param	x1	The point's X coord
+	 * @param	y1	The point's Y coord
+	 * @return		The relative progress, where 0.0 is no progress, 1.0 is at end.
 	 */
 	public double relativePathProgress(double x1, double y1)
 	{
@@ -811,10 +868,13 @@ public class SimulationMap
 		return dpi * pet;
 	}
 
+	/** The length of the path */
 	private double pathLength = -1.0;
 
 	/**
-	 * Returns the length of the path.
+	 * Returns the length of the path. Computes the path on first request./
+	 *
+	 * @return	The length of the path.
 	 */
 	public double pathLength()
 	{
@@ -831,8 +891,14 @@ public class SimulationMap
 		return pathLength;
 	}
 
+	/** The mean of the path */
 	private double pathMean = -1.0;
 
+	/**
+	 * Honestly not sure what this is doing. Takes the log of the {@link pathLength()}.
+	 *
+	 * @return	the mean
+	 */
 	private double pathMean()
 	{
 		if (pathMean < 0.0)
@@ -842,8 +908,14 @@ public class SimulationMap
 		return pathMean;
 	}
 
+	/** The mode of the path */
 	private double pathMode = -1.0;
 
+	/**
+	 * Again, I can't remember what this does. Takes E to the power of the Mean.
+	 *
+	 * @return	the mode
+	 */
 	private double pathMode()
 	{
 		if (pathMode < 0.0)
@@ -853,8 +925,14 @@ public class SimulationMap
 		return pathMode;
 	}
 
+	/** the peak of the path */
 	private double pathPeak = -1.0;
 
+	/**
+	 * The peak of the path. Again, can't remember what this is doing.
+	 *
+	 * @return	the peak
+	 */
 	private double pathPeak()
 	{
 		if (pathPeak < 0.0)
@@ -865,26 +943,52 @@ public class SimulationMap
 		return pathPeak;
 	}
 
+	/**
+	 * The travel distance along the path.
+	 *
+	 * @param	travel	The travel along the path
+	 * @return			The adjusted travel along the path
+	 */
 	public double pathTravel(double travel)
 	{
 		return (1.0 / pathPeak() ) * (1.0 / ( travel * .5 * Math.sqrt( 2.0 * Math.PI ) )) * Math.exp( - ( Math.pow( ( Math.log(travel) - pathMean() ), 2.0 ) / ( 2.0 * Math.pow( 0.5, 2.0 ) ) ) );
 	}
 
+	/**
+	 * Get the start X of the first pathline.
+	 *
+	 * @return	starting X coord.
+	 */
 	public double getStartX()
 	{
 		return pathLines[0].x1();
 	}
 
+	/**
+	 * Get the start Y of the first pathline.
+	 *
+	 * @return	starting Y coord.
+	 */
 	public double getStartY()
 	{
 		return pathLines[0].y1();
 	}
 
+	/**
+	 * Accessor for the wall {@link SimpleLine}s.
+	 *
+	 * @return the array of walls
+	 */
 	public SimpleLine[] walls()
 	{
 		return wallLines;
 	}
 
+	/**
+	 * Accessor for the path {@link SimpleLine}s.
+	 *
+	 * @return the array of paths
+	 */
 	public SimpleLine[] paths()
 	{
 		return pathLines;
