@@ -1,19 +1,32 @@
 import java.io.*;
 
-/*
-	Programmer: Daniel J. Boston
-	Date: May 7, 2007
-	Class: CS 370
-
-	Building the Neuron model took a bit of thought. Basically, the Neuron includes the "dendrites" and "axons" and "somas" all on one
-	 object, as other models made traversal WAY too difficult. Inputs must have attached weights. Outputs all get the same value applied
-	 to them, based on the ActivationFunction.
-*/
+/**
+ * This Neuron class is a bit messy still, but is the result of lots of careful thought involving the construction
+ *   and functioning of a neural network. The Neuron includes the "dendrites" and "axons" and "somas" (parts of your
+ *   brain) all in one object, as other models made traversal (and activation propogation) WAY too difficult.
+ * Inputs must have attached weights.
+ * Outputs all get the same valued applied to them, based on the ActivationFunction. Basically, the neuron "activates"
+ *   at a particular value, and that value is sent to all Neurons attached to the output. It's up to each connected
+ *   neuron to weight that value based on their input weights.
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 May 7, 2007
+ *
+ * @see {@link NeuralNetwork} for how these Neurons link together
+ * @see {@link ActivationFunction} for a listing of activation functions usable by these Neurons.
+ */
 public class Neuron
 {
 	private Neuron[] inList;
 	private double[]  inListWeight;
-	public double[] getInWeights() { return inListWeights; } // investigative function.
+	/**
+	 * Introspection function, allows a monitor to see what the current input weights of this Neuron are.
+	 *
+	 * @return	the array of doubles representing the current weights applied to each input.
+	 */
+	public double[] getInWeights() {
+		return inListWeights;
+	}
 	private Neuron[] outList;
 
 	private int inputs;
@@ -21,26 +34,67 @@ public class Neuron
 
 	private double[] inputValue;
 	private double outputValue;
-	public double getOutputValue() { return outputValue; }; // investigative function.
+	/**
+	 * Introspective function, allows a monitor to see what the current output value is.
+	 *
+	 * @return	the double value representing this neuron's current output strength.
+	 */
+	public double getOutputValue() {
+		return outputValue;
+	};
 
 	private int inCount;
 	private int outCount;
 
-	private double alpha; // learning rate
-	private double phi; // forgetting factor
+	/** Learning rate */
+	private double alpha;
+	/** Forgetting factor */
+	private double phi;
 
-	private double theta; // activation level
-	public double getTheta() { return theta; } // investigative function.
+	/** Activation Threshold/Level */
+	private double theta;
+	/**
+	 * Introspective function, allows a monitor to see what the current activation threshold is.
+	 *
+	 * @return	the double value representing this neuron's current activation threshold.
+	 */
+	public double getTheta() {
+		return theta;
+	}
 
-	private boolean debug; // debugging this node?
+	/** Old-style debug mode flag */
+	private boolean debug;
+	/** Old-style debug mode output target */
 	private PrintWriter debugOut;
 
+	// TODO: add Logger
+
+	/**
+	 * The Neuron's activation function.
+	 * @see {@link ActivationFunction}
+	 */
 	private ActivationFunction activator;
 
-	public static double MAXWEIGHT = 10;
+	/**
+	 * To prevent Neuron weights from growing without bound, it's typical to set a maximum weight.
+	 * This static parameter is just such a maximum.
+	 */
+	public static double MAXWEIGHT = 10.0;
 
-	// Setup a Neuron with the specified number of inputs, outpus, and the specified learning, forgetting, and threshold, with the
-	//  passed ActivationFunction.
+	/**
+	 * Sets up a Neuron with the specified number of input "slots" (filled later), output "slots", along with other
+	 *   important characteristics such as learning factor, forgetting factor, and activation threshold, along with
+	 *   the {@link ActivationFunction} that will determine output weight based on inputs.
+	 *
+	 * @param	_inputs		the number of inputs this Neuron will accept.
+	 * @param	_outputs	the number of outputs this Neuron will accept.
+	 * @param	_alpha		the learning factor
+	 * @param	_phi		the forgetting factor
+	 * @param	_theta		the activation threshold
+	 * @param	_act		the {@link ActivationFunction}
+	 *
+	 * TODO: remove C style params, evaluate if statically sized inputs/outputs makes sense still.
+	 */
 	public Neuron(int _inputs, int _outputs, double _alpha, double _phi, double _theta, ActivationFunction _act)
 	{
 		inputs = _inputs;
@@ -68,22 +122,36 @@ public class Neuron
 		activator = _act;
 	}
 
-	// Returns the base output value of this neuron.
+	/**
+	 * Duplicate? Returns the current output value.
+	 *
+	 * @return	the output value.
+	 */
 	public double getOutput()
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].getOutput() = " + String.valueOf(outputValue));
 		return outputValue;
 	}
 
-	// Sets the output value of this neuron. Questionable to call from outside.
+	/**
+	 * Sets the output value of this neuron. Questionable to call from outside.
+	 *
+	 * @param	_output	the new output value. Violates activation function contract.
+	 */
 	void setOutput(double _output)
 	{
 		outputValue = _output;
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].setOutput(" + String.valueOf(_output) + ")");
 	}
 
-	// Add an input to this neuron. You can add inputs up until the maximum inputs you specified in constructing the neuron.
-	//  Each input as a weight.
+	/**
+	 * Add an input to this neuron. You can add inputs up until the maximum inputs you specified in constructing the neuron.
+	 *  Each input must have a weight.
+	 *
+	 * @param	_in		the Neuron to add as an input
+	 * @param	_weight	the weight of this input
+	 * @return			True if the Neuron was added, False if the input set is full.
+	 */
 	public boolean addInput(Neuron _in, double _weight)
 	{
 		if (debug) debugOut.print("[" + String.valueOf(this.hashCode()) + "].addInput([" + String.valueOf(_in.hashCode()) + "]," + String.valueOf(_weight) + ") = ");

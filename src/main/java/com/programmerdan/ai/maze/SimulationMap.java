@@ -1,3 +1,5 @@
+package com.programmerdan.ai.maze;
+
 import java.io.*;
 import java.awt.geom.*;
 import java.text.*;
@@ -6,7 +8,7 @@ import java.text.*;
  * This is the simulation map object, it encapsulates a number of ideas including the bounding boxes of lines, and the concept of "proper path".
  *
  * @author Daniel Boston <programmerdan@gmail.com>
- * @version 1.0 2010
+ * @version 1.0 2007
  * @version 1.0-mvn March 23, 2013
  *
  * TODO: refactor main() as test

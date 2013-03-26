@@ -1,3 +1,5 @@
+package com.programmerdan.ai.maze;
+
 import java.awt.geom.*;
 import javax.swing.*;
 import java.util.*;
@@ -6,9 +8,10 @@ import java.awt.event.*;
 import java.io.*;
 
 /**
- *	Author: Daniel J. Boston
- *	Date: November 22, 2010
- *	Class: Artificial Intelligence
+ *	@author Daniel Boston <programmerdan@gmail.com>
+ *	@version 1.0 November 22, 2010
+ *
+ *  Class: Artificial Intelligence
  *
  *	This is a simulation model that uses the map and "bug" class to generationally create a "better maze solver" at least for the training set.
  */
