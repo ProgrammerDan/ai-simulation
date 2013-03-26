@@ -171,7 +171,12 @@ public class Neuron
 		}
 	}
 
-	// Adds an output to the Neuron. Again, can add only until the maximum number of outputs you specified in constructing the neuron.
+	/**
+	 * Adds an output to the Neuron. Again, can add only until the maximum number of outputs you specified in constructing the neuron.
+	 *
+	 * @param	_out	the Neuron to add as an output
+	 * @return			True if the Neuron was added, False if the output set is full.
+	 */
 	public boolean addOutput(Neuron _out)
 	{
 		if (debug) debugOut.print("[" + String.valueOf(this.hashCode()) + "].addOutput([" + String.valueOf(_out.hashCode()) + "]) = ");
@@ -189,7 +194,14 @@ public class Neuron
 		}
 	}
 
-	// Step this Neuron by running the neuron's values against the activation function.
+	/**
+	 * Step this Neuron by running the neuron's values against the activation function.
+	 *   Uses the input values, input list of Neurons, input list of weights and activation
+	 *   threshold. It sends those values to the activation function.
+	 * After stepping, calls {@link learn()}.
+	 *
+	 * @see {@link ActivationFunction.activate}
+	 */
 	public void step()
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].step()");
@@ -201,8 +213,13 @@ public class Neuron
 		learn();
 	}
 
-	// Learns, based on the Hebbian model of learning. The weight update is based on the output values of the input list
-	//  against the output of this neuron.
+	/**
+	 * Learns, based on the Hebbian model of learning. The weight update is based on the output
+	 *   values of the input list against the output of this neuron. Note that Hebbian learning
+	 *   is pretty complex, so I won't give a detailed breakdown here. Basically, for each
+	 *   input and using the current output, the input weights are adjusted.
+	 * Learning is applied first, then forgetting, for each input weight in order.
+	 */
 	private void learn()
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].learn()");
@@ -238,21 +255,32 @@ public class Neuron
 		}
 	}
 
-	// Turn on the debug output for this neuron.
+	/**
+	 * Turn on the debug output for this neuron.
+	 *
+	 * @param	_debout	The output {@link PrintWriter} for debug statements.
+	 * TODO: replace with logger and logging level throughout.
+	 */
 	public void activateDebug(PrintWriter _debout)
 	{
 		debugOut = _debout;
 		debug = true;
 	}
 
-	// Turn off the debug for this neuron.
+	/**
+	 * Turn off debugging for this neuron.
+	 */
 	public void deactivateDebug()
 	{
 		debugOut = null;
 		debug = false;
 	}
 
-	// Output the various values of this neuron as a list of weights followed by the activation threshold.
+	/**
+	 * Output the various values of this neuron as a list of weights followed by the activation threshold.
+	 *
+	 * @return	The input weights and threshold.
+	 */
 	public String toString()
 	{
 		StringBuffer ret = new StringBuffer("<");
@@ -275,11 +303,16 @@ public class Neuron
 
 }
 
-// This is a dummy class to handle straight passthrough and exposure of input to attached neurons.
+/**
+ * This is a dummy class to handle straight passthrough and exposure of input to attached neurons.
+ *   Allows external players to set inputs on Neurons, such as based on environment interaction or
+ *   training patterns.
+ */
 class NetworkInput extends Neuron
 {
-	// allows direct input into the network.
-
+	/**
+	 * Construct a new input, with a linear activation function and default of 0.0 output.
+	 */
 	public NetworkInput()
 	{
 		super(0,1,0,0, 0.0, AF_Linear.Default);
@@ -287,6 +320,11 @@ class NetworkInput extends Neuron
 		setOutput(0.0);
 	}
 
+	/**
+	 * Sets the output value of this Neuron, or, sets the "input" of this passthrough.
+	 *
+	 * @param	_output	The new "input" value.
+	 */
 	public void setValue(double _output)
 	{
 		setOutput(_output);
