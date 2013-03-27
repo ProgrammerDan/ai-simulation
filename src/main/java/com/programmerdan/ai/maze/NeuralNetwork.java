@@ -1,18 +1,39 @@
+package com.programmerdan.ai.maze;
+
 import java.io.*;
 
-/*
-	Programmer: Daniel J. Boston
-	Date: May 7, 2007
-	Class: CS 370
-
-	This is a Neural Network builder/holding class. It consists of an input layer, zero or more hidden layers, and one output layer --
-	 the output layer is either the input layer (a single layer network), the last hidden layer (no specific output layer), or the
-	 specified output layer.
-
-	Largely this is based on the structure we discussed in class.
-*/
+/**
+ * This is a Neural Network builder/holder class.
+ * This is meant to encompass a fairly classic neural network, which consists of an input layer, zero or more hidden layers, and
+ *   one output layer. The output layer is either the input layer (a single layer network), the last hidden layer (no specific
+ *   output layer), or the specified output layer.
+ *
+ * Note that this is a very simple neural network, where all the outputs of each layer feed every neuron in the subsequent layer.
+ *   Inputs propogate, then, from the "top" at the input layer down through to the output layer, passing through each successive
+ *   layer in turn.
+ * More complex neural networks would have a more diversified structure, where propogation was based on a more tree-like organizational
+ *   structure, although with this simplicity there is opportunity. Given the regularity of the structure, more complex organizations
+ *   can be simulated by zeroing selective inputs to specific neurons in subsequent layers.
+ *
+ * An additional simplification is that learning and forgetting are captured as network-wide parameters, so the entire network
+ *   will learn (and forget) at a consistent rate. More advanced implementations of Neural Networks may prefer to blend the
+ *   learning and forgetting factors, allowing portions of the network to learn and forget slowly, while other portions learn and
+ *   forget more quickly, or whatever blend is preferred for the problem at hand. This remains a topic for future implementation.
+ *
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 May 7, 2007
+ * @see {@link Neuron}
+ */
 public class NeuralNetwork
 {
+	/**
+	 * Simple executable test of the Neural Network. The parameters are well know, making
+	 * verification simple.
+	 * TODO: Move this into a JUnit test.
+	 *
+	 * @param	args	Ignored.
+	 */
 	public static void main(String[] args)
 	{
 		// test some simple networks and see that they connect correctly.
@@ -102,7 +123,14 @@ public class NeuralNetwork
 
 	private int factorSize;
 
-	/** This debug function returns an array of all the weights and factors in the network at the time of the call. **/
+	/**
+	 * This debug function returns an array of all the weights and factors in the network at the time of the call.
+	 * It probably won't be useful except where in-depth knowledge of the network construction is available.
+	 *
+	 * @return	an array of doubles, holding all factors. Element 0 is learning, 1 is forgetting, followed
+	 *			  successively by input weights and activation thresholds for each layer, starting with
+	 *            input layer, then hidden layers, finally output layer.
+	 **/
 	public double[] getNetworkFactors()
 	{
 		double[] nf = new double[factorSize];
@@ -147,10 +175,25 @@ public class NeuralNetwork
 		return nf;
 	}
 
+	//TODO: Let's modernize this debug.
 	private boolean debug; // debugging this network?
 	private PrintWriter debugOut;
 
-	// Build network.
+	/**
+	 * Initialize a new neural network.
+	 * Specifies the network characteristics, including number of input neurons, number of hidden neurons in each layer
+	 *   and how many hidden layers, how many output neurons, and finally the learning and forgetting factors of the
+	 *   network.
+	 *
+	 * TODO: Get rid of C style params.
+	 *
+	 * @param	_nInputs	Number of input neurons in the input layer. (if negative, absolute value used)
+	 * @param	_nHidden	Number of hidden neurons in each hidden layer. (if negative, absolute value used)
+	 * @param	_sizeHidden	Number of hidden layers. (if negative, absolute value used)
+	 * @param	_nOutputs	Number of output neurons in the output layer. (if negative, absolute value used)
+	 * @param	_alpha		The learning factor.
+	 * @param	_phi		The forgetting factor.
+	 */
 	public NeuralNetwork(int _nInputs, int _nHidden, int _sizeHidden, int _nOutputs, double _alpha, double _phi)
 	{
 		factorSize = 2; // alpha and phi.
@@ -198,11 +241,16 @@ public class NeuralNetwork
 		cOutput = 0;
 	}
 
-	/*
-		_weight: weight between Input Handler and Input Layer (how sensitive am I to input?)
-		_theta: activation weight of Input Layer (what is my threshold for input?)
-		active: activation function of Input Layer (how do I fire?)
-	*/
+	/**
+	 * Adds an input to the input layer by creating a new Neuron and wiring it up to the rest of the network.
+	 *
+	 * @param	_weight		weight between Input Handler and Input Layer (how sensitive am I to input?)
+	 * @param	_theta		activation weight of Input Layer (what is my threshold for input?)
+	 * @param	active		activation function of Input Layer (how do I fire?)
+	 * @return				True if input was successfully created and added, False otherwise.
+	 * @see {@link ActivationFunction}
+	 * @see {@link Neuron}
+	 */
 	public boolean addInput(double _weight, double _theta, ActivationFunction active)
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].addInput(" + String.valueOf(cInput) + "," + String.valueOf(_weight) + "," + String.valueOf(_theta) + ")");
@@ -211,7 +259,7 @@ public class NeuralNetwork
 		{
 			int _idx = cInput;
 
-			if (inputLayer[_idx] == null)
+			if (inputLayer[_idx] == null) // TODO: If input layer is size 0, this will throw null pointer exception.
 			{
 				if (hasHidden) // is there at least some kind of hidden layer?
 					inputLayer[_idx] = new Neuron(1, sizeHidden, alpha, phi, _theta, active);
@@ -271,7 +319,19 @@ public class NeuralNetwork
 		}
 	}
 
-	// Add a hidden layer, with the specified application function.
+	/**
+	 * Add a hidden layer, with the specified application function.
+	 *
+	 * @param	_weights	For each new layer, this weight array must be equal in size to the size of the previous layer.
+	 * 						  For example, if the input layer is 5 Neurons "wide", every neuron in the first hidden layer
+	 *						  should have 5 weights. If that hidden layer is 7 Neurons "wide", every neuron in the second
+	 *						  hidden layer (or output layer) must have 7 weights, and so on.
+	 * @param	_theta		The activation threshold for this Neuron.
+	 * @param	active		The activation function.
+	 * @return				True if hidden Neuron was successfully added, False otherwise.
+	 * @see {@link Neuron}
+	 * @see {@link ActivationFunction}
+	 */
 	public boolean addHidden(double[] _weights, double _theta, ActivationFunction active) // _weights.length MUST == previous layer size
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].addHidden(" + String.valueOf(cLayer) + "," + String.valueOf(cHidden) + "," + String.valueOf(_weights.length) + "," + String.valueOf(_theta) + ")"); // output weight list size.
@@ -364,7 +424,18 @@ public class NeuralNetwork
 		}
 	}
 
-	// Add output layer. Note that both hidden and output layers will only be filled if the previous layers are full.
+	/**
+	 * Add output layer. Note that both hidden and output layers will only be filled if the previous layers are full.
+	 *   E.g. only start calling this function once all input neurons and hidden neuron layers are complete.
+	 *
+	 * @param	_weights	{@link addHidden()} for explanation, as the size of this array must be the same as the number
+	 *						  of Neurons in the final hidden layer.
+	 * @param	_theta		The activation threshold for this output.
+	 * @param	active		The activation function for this output.
+	 * @return				True if output neuron was created and bound successfully, False otherwise.
+	 * @see {@link Neuron}
+	 * @see {@link ActivationFunction}
+	 */
 	public boolean addOutput(double[] _weights, double _theta, ActivationFunction active) // _weights.length MUST == previous layer size
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].addOutput(" + String.valueOf(cOutput) + "," + String.valueOf(_weights.length) + "," + String.valueOf(_theta) + ")"); // output weight list size.
@@ -447,7 +518,12 @@ public class NeuralNetwork
 		}
 	}
 
-	// Set the inputs of the neural network.
+	/**
+	 * Set the inputs of the neural network.
+	 *
+	 * @param	inValues	The input values to pass into the network for this "step". The size of this array
+	 *						  must be equal to the number of input Neurons defined.
+	 */
 	public void setInputs(double[] inValues)
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].setInputs(" + String.valueOf(inValues.length) + ")");
@@ -466,8 +542,12 @@ public class NeuralNetwork
 		}
 	}
 
-	// Get the output values from the network -- either the input layer (no hidden, no output), the last hidden (no outputs) or the output
-	//  layer.
+	/**
+	 * Get the output values from the network -- either the input layer (no hidden, no output), the last hidden (no outputs) or the output
+	 *   layer.
+	 *
+	 * @return	The Neural Network output values. This array will be the same size as the output layer (as defined above).
+	 */
 	public double[] getOutputs()
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].getOutputs()");
@@ -497,8 +577,10 @@ public class NeuralNetwork
 		return outValues;
 	}
 
-	// Step the network one layer at a time. Start at input layer, then progress by layers back to the output layer.
-	//  Learning is also applied progressively -- Hebb's learning principle is applied on a Neuron level.
+	/**
+	 * Step the network one layer at a time. Start at input layer, then progress by layers back to the output layer.
+	 *  Learning is also applied progressively -- Hebb's learning principle is applied on a Neuron level.
+	 */
 	public void step()
 	{
 		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].step()");
@@ -532,14 +614,23 @@ public class NeuralNetwork
 		// done.
 	}
 
-	// Turn on the debug for the Network.
+	/**
+	 * Turn on the debug for the Network.
+	 * TODO: Modernize.
+	 *
+	 * @param	_debout		The PrintWriter to send debug messages to.
+	 */
 	public void activateDebug(PrintWriter _debout)
 	{
 		debugOut = _debout;
 		debug = true;
 	}
 
-	// Turn on debug for all Neurons in the Network.
+	/**
+	 * Turn on debug for all Neurons in the Network.
+	 * Must be called strictly AFTER {@link activateDebug(PrintWriter)} or will cause quite a few
+	 *   {@link NullPointerException}s.
+	 */
 	public void activateChildDebug()
 	{
 		if (debug)
@@ -567,8 +658,12 @@ public class NeuralNetwork
 		}
 	}
 
-	// Print the construction of the input, hidden, and output layers in a matrix type style, based on the
-	//  toString of Neuron.
+	/**
+	 * Print the construction of the input, hidden, and output layers in a matrix type style, based on the
+	 *  toString of {@link Neuron.toString()}.
+	 *
+	 * @return	A multi-line String containing a representative "matrix" of the Neuron.
+	 */
 	public String printConstruct()
 	{
 		StringBuffer matrix = new StringBuffer("Input: ");
@@ -606,7 +701,11 @@ public class NeuralNetwork
 		return matrix.toString();
 	}
 
-	// Print the output of each layer in the network as an output matrix.
+	/**
+	 * Print the output of each layer in the network as an output matrix.
+	 *
+	 * @return	All the outputs of each layer as a String matrix.
+	 */
 	public String printMatrix()
 	{
 		StringBuffer matrix = new StringBuffer("Input: ");
@@ -644,7 +743,9 @@ public class NeuralNetwork
 		return matrix.toString();
 	}
 
-	// Turn OFF the debug.
+	/**
+	 * Turn OFF the debug.
+	 */
 	public void deactivateDebug()
 	{
 		debugOut = null;

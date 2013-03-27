@@ -1,3 +1,5 @@
+package com.programmerdan.ai.maze;
+
 import java.io.*;
 
 /**
