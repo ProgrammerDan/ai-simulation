@@ -1,3 +1,5 @@
+package com.programmerdan.ai.maze;
+
 /*
 	Programmer: Daniel J. Boston
 	Date: May 7, 2007

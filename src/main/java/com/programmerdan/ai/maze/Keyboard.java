@@ -1,46 +1,52 @@
+package com.programmerdan.ai.maze;
+
 import java.io.*;
 
-/*
-	Programmer: Daniel J. Boston
-	Date: April 17, 2007
-	Class: ---all---
-
-	This is a generalized support class to handle keyboard input, and output to a screen in a pretty fashion.
-	To include it in a compile, make sure the Keyboard.java file is in the same directory as the referencing
-	source file, and include it in the javac input line.
-
-	Example:
-		javac Simulation.java Keyboard.java
-
-*/
+/**
+ * This is a generalized support class to handle keyboard input, and output to a screen in a pretty fashion.
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 April 17, 2007
+ */
 public class Keyboard
 {
 	BufferedReader in;
 
-	/*
-		Build using System.in
-	*/
+	/**
+	 * Standard build using System.in
+	 */
 	public Keyboard()
 	{
 		in = new BufferedReader(new InputStreamReader(System.in));
 	}
 
-	/*
-		Build using a specified System.in
-	*/
+	/**
+	 * Build using a specified {@link InputStream}
+	 *
+	 * @param	_in		The InputStream to use.
+	 */
 	public Keyboard(InputStream _in)
 	{
 		in = new BufferedReader(new InputStreamReader(_in));
 	}
 
+	/**
+	 * Shortcut for {@link printfull(String)}
+	 *
+	 * @param	_token	the String to print.
+	 * @see {@link printfull(String)}
+	 */
 	public void printf(String _token)
 	{
 		printfull( _token );
 	}
 
-	/*
-		Prints a token repeatedly to fill a single row of screen text.
-	*/
+	/**
+	 * Prints a token repeatedly to fill a single row of screen text.
+	 *   A screen is assumed to be 80 characters in width.
+	 *
+	 * @param	_token	the String token to print repeatedly.
+	 */
 	public void printfull(String _token)
 	{
 		int len = _token.length();
@@ -53,26 +59,43 @@ public class Keyboard
 		System.out.println(temp.toString());
 	}
 
+	/**
+	 * Shortcut to {@link print(String, int)}, setting alignment to "left"
+	 *
+	 * @param	_s	The string to print, left aligned.
+	 */
 	public void printl(String _s)
 	{
 		print(_s, -1);
 	}
 
+	/**
+	 * Shortcut to {@link print(String, int)}, setting alignment to "right"
+	 *
+	 * @param	_s	The string to print, right aligned.
+	 */
 	public void printr(String _s)
 	{
 		print(_s, 1);
 	}
 
+	/**
+	 * Shortcut to {@link print(String, int)}, setting alignment to "center"
+	 *
+	 * @param	_s	The string to print, center aligned.
+	 */
 	public void printc(String _s)
 	{
 		print(_s, 0);
 	}
 
-	/*
-		Prints a string with the specified alignment -- to the left, centered, or to the right.
-		_n is the alignment control -- 0 for centered, 1 for right justify, and -1 (or else) for
-		left justify.
-	*/
+	/**
+	 * Prints a string with the specified alignment -- to the left, centered, or to the right.
+	 *
+	 * @param	_s	The String to print, aligned.
+	 * @param	_n 	The alignment control -- 0 for centered, 1 for right justify, and -1 (or else) for
+	 *				  left justify.
+	 */
 	public void print(String _s, int _n)
 	{
 		int len = _s.length();
@@ -108,9 +131,12 @@ public class Keyboard
 		}
 	}
 
-	/*
-		Gets a character from the input stream, and returns it as an integer.
-	*/
+	/**
+	 * Gets a character from the input stream, and returns it as an integer.
+	 *
+	 * @return	The character returned
+	 * @throw	IOException	based on a failure to read a character from the InputStream.
+	 */
 	public int getChr() throws IOException
 	{
 		int inchr = in.read();
@@ -122,9 +148,12 @@ public class Keyboard
 		return inchr;
 	}
 
-	/*
-		Gets a string representing a line of input (a sequence of characters terminated by a carriage return) from the input stream.
-	*/
+	/**
+	 * Gets a string representing a line of input (a sequence of characters terminated by a carriage return) from the input stream.
+	 *
+	 * @return	The String line to return
+	 * @throw	IOException based on a failure to read a String line from the InputStream.
+	 */
 	public String getLine() throws IOException
 	{
 		return in.readLine();

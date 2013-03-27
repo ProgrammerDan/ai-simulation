@@ -1,5 +1,19 @@
+package com.programmerdan.ai.maze;
+
+/**
+ * Testing various encoding and decoding techniques, used by the Chromosome class.
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 2010 (more recent than other code)
+ * TODO: Refactor as actual tests!
+ */
 public class EncodeTest
 {
+	/**
+	 * Main test function, should be in an actual JUnit test (TODO!)
+	 *
+	 * @param	args	Unused.
+	 */
 	public static void main(String[] args)
 	{
 		double aD = .52543;
@@ -57,6 +71,14 @@ public class EncodeTest
 		}
 	}
 
+	/**
+	 * Encode a double as a boolean, to the precision
+	 *   indicated by the length of the boolean array.
+	 *
+	 * @param	num		The number to encode.
+	 * @param	enc		The boolean array to fill.
+	 * @return			String representation of the boolean Array.
+	 */
 	public static String code(double num, boolean[] enc)
 	{
 		String str = "";
@@ -81,6 +103,12 @@ public class EncodeTest
 		return str;
 	}
 
+	/**
+	 * Deep encode a boolean array as String (into a byte array)
+	 *
+	 * @param	enc		The boolean array to encode
+	 * @return			A string formed from bytes based on the boolean array.
+	 */
 	public static String deepcode(boolean[] enc)
 	{
 		int leftover = enc.length % 7;
@@ -110,6 +138,14 @@ public class EncodeTest
 		return new String(arr);
 	}
 
+	/**
+	 * Decodes a deep encoded String (see {@link deepcode(boolean[])}) into a
+	 * boolean array.
+	 *
+	 * @param	cod		The code String to decode.
+	 * @param	enc		The size of the encoding
+	 * @return			A boolean array representing the decoded String, to the precision of enc.
+	 */
 	public static boolean[] deepdecode(String cod, int enc)
 	{
 		byte[] arr = cod.getBytes();
@@ -145,6 +181,12 @@ public class EncodeTest
 		return dec;
 	}
 
+	/**
+	 * Decodes a boolean array into a double value.
+	 *
+	 * @param	enc		The boolean array to decode.
+	 * @return			The double value decoded from the array.
+	 */
 	public static double decode(boolean[] enc)
 	{
 		double dec = 0.0;
