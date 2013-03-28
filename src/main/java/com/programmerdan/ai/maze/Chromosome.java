@@ -2,25 +2,36 @@ package com.programmerdan.ai.maze;
 
 import java.util.*;
 
-/*
-	Programmer: Daniel J. Boston
-	Date: May 7, 2007
-	Class: CS 370
-
-	A sequence of genes and associated support, creation, and output routines.
-*/
+/**
+ * A Chromosome is traditionally a sequence of genes. This class mirrors that concept,
+ *   and adds in a host of support, creation, and output routines.
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 May 7, 2007
+ * @see {@link Gene}
+ */
 public class Chromosome
 {
 	private Vector<Gene> genes; // Bag of genes.
 	private int nGenes;			// number of genes.
 
+	/**
+	 * Instantiates a new Chromosome with no genes.
+	 */
 	public Chromosome()
 	{
 		genes = new Vector<Gene>();
 		nGenes = 0;
 	}
 
-	// Read in a Chromosome based on the output standard of Chromosome.toString()
+	/**
+	 * Append to this Chromosome a set of Genes based on the output standard of Chromosome.toString()
+	 *
+	 * @param	geneString	A String of genes
+	 * @see {@link toString()} describes the input format of the String for this function.
+	 *
+	 * TODO: This is an append, not a set. Refactor.
+	 */
 	public void setGenes(String geneString)
 	{
 		if (geneString.length() > 0)
@@ -44,7 +55,12 @@ public class Chromosome
 		}
 	}
 
-	// Read in a Chromosome based on the output standard of Chromosome.toEncodedString()
+	/**
+	 * Append to this Chromosome a set of Genes based on the output standard of Chromosome.toEncodedString()
+	 *
+	 * @param	geneString	A String of encoded genes
+	 * @see {@link toEncodedString()} describes the input format of the String for this function.
+	 */
 	public void setGenesEncoded(String geneString)
 	{
 		if (geneString.length() > 0)
@@ -77,7 +93,13 @@ public class Chromosome
 		}
 	}
 
-	// append a gene to the end of this chromosome
+	/**
+	 * Append a {@link Gene} to the end of this Chromosome.
+	 *
+	 * @param	toAdd	the Gene to add.
+	 * @return			True if successful, False otherwise.
+	 * TODO: ignoring return of .add() is bad form. Refactor.
+	 */
 	public boolean addGene(Gene toAdd)
 	{
 		if (toAdd != null)
@@ -89,7 +111,16 @@ public class Chromosome
 		return false;
 	}
 
-	// append a gene to the end of this chromosome
+	/**
+	 * Append a {@link Gene} to the end of this Chromosome, where
+	 * the gene is described by its Double (encoded) value, and the
+	 * target size of the resulting Gene (a series of bits).
+	 *
+	 * @param	toAdd	the "value" of the Gene. Must be in the range [0.0, 1.0).
+	 * @param	size	the size of the Gene.
+	 * @return			True if successfully added, False otherwise.
+	 * TODO: No check performed on "size". .add() ignored.
+	 */
 	public boolean addGene(double toAdd, int size)
 	{
 		if (toAdd < 0.0 || toAdd >= 1.0)
@@ -104,7 +135,13 @@ public class Chromosome
 		}
 	}
 
-	// get a specific gene from the chromosome, or null if index is out of bounds.
+	/**
+	 * Get a specific gene from the chromosome, or null if index is out of bounds.
+	 *
+	 * @param	_idx	The Gene at index _idx to retrieve.
+	 * @return			A {@link Gene} at index _idx, or null if _idx is out of bounds.
+	 * TODO: This code is so C. Refactor, throw some exceptions, etc.
+	 */
 	public Gene getGene(int _idx)
 	{
 		if ((_idx >= 0) && (_idx < nGenes))
@@ -115,16 +152,28 @@ public class Chromosome
 			return null;
 	}
 
+	/**
+	 * Returns the number of genes in this Chromosome.
+	 *
+	 * @return	the number of Genes in this Chromosome.
+	 * TODO: Why do I keep a separate index when I can query the list itself?
+	 */
 	public int numGenes()
 	{
 		return nGenes;
 	}
 
-	/*
-		Crossover as defined in the notes, with the following exception -- the notes only talk about
-		  single point crossover. This function allows you to specify how many times to crossover the chromosomes,
-		  so that you can have more or less crossovers, giving lots of control to interested parties.
-	*/
+	/**
+	 * Crossover is simple -- it is a point where two Chromosomes, during reproduction, "cross" -- e.g. where the
+	 *   first Chromosome stops contributing fully to the new Chromosome, and the second Chromosome takes over.
+	 * Many standard models of crossover are limited to single point crossover. This function allows you to specify
+	 *   how many times to crossover the chromosomes, so that you can have more or less crossovers, giving lots of
+	 *   control to interested parties.
+	 *
+	 * @param	_b		The second Chromosome to involve in crossover. Implied is {@code this} is the first Chromosome.
+	 * @param	times	The number of times to crossover. Must be a counting integer (greater than 0).
+	 * @return			A new Chromosome which is a blend of both original Chromosomes.
+	 */
 	public Chromosome crossover(Chromosome _b, int times)
 	{
 		if (times > 0) // need to crossover at least once!
@@ -135,6 +184,7 @@ public class Chromosome
 			int maxPoint = (longer) ? _b.numGenes() : this.nGenes; // uses the smaller of the two
 			int longest = (longer) ? this.nGenes : _b.numGenes();
 
+			//TODO: What the What? This is really strange. refactor.
 			boolean curChromo = true; // true = this, false = _b
 
 			Chromosome source = (curChromo) ? this: _b;
@@ -146,6 +196,7 @@ public class Chromosome
 			}
 
 			// sort them, so that they occur in a line
+			// TODO: REFACTOR. Let's use Arrays.sort()...
 			if (times > 2)
 			{
 				for (int a = 0; a < times - 1; a ++) // insertion sort
@@ -174,6 +225,7 @@ public class Chromosome
 			// The contract of this method will return a chromosome equal in length to the longest chromosome.
 			Chromosome crossed = new Chromosome();
 
+			//TODO: I see issues here. I think there is a possibility that NULL genes will get added to the new Chromosome.
 			int j = 0;
 			for (int i = 0; i < longest; i++) // crossover -- start with the one chromosome, then swap to the other.
 			{
@@ -200,7 +252,13 @@ public class Chromosome
 		return null;
 	}
 
-	// Clone is the other primary operation. Just builds a new chromosome that duplicates the old one.
+	/**
+	 * Clone is the other primary operation beyond crossover. Just builds a new chromosome that duplicates the old one.
+	 *   Note this is a deep copy (each object member is also cloned).
+	 *
+	 * @return	A new Chromosome having clones of each Gene of the original Chromosome.
+	 * TODO: Let's implement the Cloneable interface, perhaps?
+	 */
 	public Chromosome clone()
 	{
 		Chromosome ret = new Chromosome();
@@ -211,7 +269,13 @@ public class Chromosome
 		return ret;
 	}
 
-	// Mutate the chromosomes -- passes the mutation along to a random gene in the chromosome.
+	/**
+	 * This uses {@link clone()} with one alteration -- after cloning, a single random gene is mutated.
+	 *
+	 * @return	A new Chromosome having clones of each Gene of the original Chromosome, but with one mutation.
+	 * TODO: Only a single mutation? Perhaps should allow multiple mutations, or probability model injection to control mutation.
+	 *         Otherwise multiple mutations leads to huge object churn.
+	 */
 	public Chromosome mutate()
 	{
 		int mutatepoint = (int) (Math.random() * nGenes);
@@ -223,7 +287,13 @@ public class Chromosome
 		return ret;
 	}
 
-	// Build a new, random chromosome -- a "factory" method.
+	/**
+	 * Build a new, random chromosome -- a "factory" method. TODO: Refactor into a factory?
+	 *
+	 * @param	nGenes	Number of random genes to generate
+	 * @param	nSize	Size of each gene to generate.
+	 * @return			A new Chromosome
+	 */
 	public static Chromosome randomChromosome(int nGenes, int nSize)
 	{
 		Chromosome ret = new Chromosome();
@@ -236,7 +306,13 @@ public class Chromosome
 		return ret;
 	}
 
-	// Output this chromosome as a string.
+	/**
+	 * Output this chromosome as a String, encoding each Gene with the {@link Gene.toString()} method,
+	 *   in the following form:
+	 * {@code [gene1][gene2][gene3]...[geneN]}
+	 *
+	 * @return	A string representation of the Genes in this Chromosome.
+	 */
 	public String toString()
 	{
 		StringBuffer ret = new StringBuffer();
@@ -251,7 +327,14 @@ public class Chromosome
 		return ret.toString();
 	}
 
-	// Output this chromosome as an encoded string.
+	/**
+	 * Output this chromosome as an encoded String, where each Gene is encoded using the {@link Gene.toEncodedString()} method,
+	 *   in the following form:
+	 * {@code [num bytes][field size]encodedGene1encodedGene2encodedGene3encodedGene4...}
+	 *
+	 * @return	A string representation of the Genes in this Chromosome, encoded.
+	 * TODO: What if genes have different sizes in the Chromosome? This encoding seems very rudimentary.
+	 */
 	public String toEncodedString()
 	{
 		StringBuffer ret = new StringBuffer();
@@ -270,7 +353,12 @@ public class Chromosome
 		return ret.toString();
 	}
 
-	// Output this chromosome as a sequence of double values.
+	/**
+	 * Output this chromosome as a sequence of double values, coded as a String, in the following format:
+	 * {@code [geneAsDouble1][geneAsDouble2][geneAsDouble3]...}
+	 *
+	 * @return	A string representation of the Genes in this Chromosome, as Doubles.
+	 */
 	public String toStringDouble()
 	{
 		StringBuffer ret = new StringBuffer();
@@ -286,14 +374,23 @@ public class Chromosome
 	}
 }
 
-/*
-	Gene subclass -- it is stored as a sequence of binary values.
-*/
+/**
+ * Gene subclass. Every {@link Chromosome} is composed of many Genes.
+ *   Each Gene is stored as a sequence of binary values, this allows easy mutations.
+ *
+ * @author Daniel Boston
+ * @version 1.0 May 7, 2007
+ */
 class Gene
 {
 	private boolean[] geneValues;
 
-	// Builds a random Gene of size "size"
+	/**
+	 * Builds a random Gene of size {@code size}.
+	 *
+	 * @param	size	the size of the random Gene.
+	 * @see {@link fillGenes()}
+	 */
 	public Gene(int size)
 	{
 		geneValues = new boolean[size];
@@ -301,7 +398,12 @@ class Gene
 		fillGenes();
 	}
 
-	// Builds a gene based on the passed boolean array
+	/**
+	 * Builds a Gene based on the passed boolean array. Note that the passed in array
+	 *   is not modified, a new array is built for the Gene to use.
+	 *
+	 * @param	genevals	the array of boolean values to base a Gene on.
+	 */
 	public Gene(boolean[] genevals)
 	{
 		geneValues = new boolean[genevals.length];
@@ -312,7 +414,12 @@ class Gene
 		}
 	}
 
-	// Builds a gene based on the passed string -- allows to build based on an inputted string.
+	/**
+	 * Builds a gene based on the passed string with a very trivial encoding:
+	 *   {@code 100101010} -- allowing a simple mapping of "binary" strings to a Gene.
+	 *
+	 * @param	geneval		the String to build a Gene from.
+	 */
 	public Gene(String geneval)
 	{
 		geneValues = new boolean[geneval.length()];
@@ -323,7 +430,16 @@ class Gene
 		}
 	}
 
-	// Builds a gene based on a double value.
+	/**
+	 * Builds a gene based on a double value. Note that all values are first made positive (absolute value)
+	 *   and then reduced to their decimal portions only. This modified value is the one used for Gene creation.
+	 * It is encoded into Binary with a trivial encoding -- multiply the value by two, if the result is above
+	 *   one, add a "1" to the Gene sequence and subtract 1 from the value. Otherwise, add a "0". Continue
+	 *   for the desired bitlength.
+	 *
+	 * @param	geneval		The double value to encode as a Gene.
+	 * @param	size		The size of the encoded value in bits.
+	 */
 	public Gene(double geneval, int size)
 	{
 		geneValues = new boolean[size];
@@ -347,7 +463,15 @@ class Gene
 		}
 	}
 
-	// Builds a gene based on an encoded string (for compactness in storage).
+	/**
+	 * Builds a gene based on an encoded string (for compactness in storage). The encoding handles
+	 *   the fact that the Bytes returned from a string may be both positive and negative, and that
+	 *   the first 33 (control) characters should be skipped in any reasonable encoding.
+	 * Review the code for more details.
+	 *
+	 * @param	cod		The coded String from which to construct a Gene
+	 * @param	enc		The length of the Gene to produce from the encoded string
+	 */
 	public Gene(String cod, int enc)
 	{
 		byte[] arr = cod.getBytes();
@@ -381,40 +505,9 @@ class Gene
 		}
 	}
 
-	/*public Gene(String cod, int enc)
-	{
-		byte[] arr = cod.getBytes();
-
-		int leftover = enc % 7;
-
-		geneValues = new boolean[enc];
-
-		int a = 0;
-
-		int l = 0;
-
-		for (int b = 0; b < arr.length; b++)
-		{
-			l = (int) arr[b];
-
-			for (int i = 0; i < 7; i++)
-			{
-				int k = l % 2;
-
-				if (!(b == 0 && i < 7 - leftover))
-				{
-					if (k == 1)
-						geneValues[a++] = true;
-					else
-						geneValues[a++] = false;
-				}
-
-				l = (int) Math.floor(l / 2.0);
-			}
-		}
-	}*/
-
-	// Fill up the new empty gene -- an initialization method -- with random values.
+	/**
+	 * Fill up the new empty gene -- an initialization method -- with random values.
+	 */
 	private void fillGenes()
 	{
 		for (int a = 0; a < geneValues.length; a++)
@@ -423,14 +516,23 @@ class Gene
 		}
 	}
 
-	// booleans = 0.[0][1][2][3][4][5][6][7] etc.
+	/**
+	 * Reduced precision output of this Gene as a Float.
+	 *
+	 * @return	Float value of this Gene. May lose some precision.
+	 * @see {@link toDouble()}
+	 */
 	public float toFloat()
 	{
 		return (float) toDouble();
 	}
 
-	// outputs a number based on adding up negative powers of two based on the values of genes
-	//  1 -- add that power, 0 -- don't add it.
+	/**
+	 * Outputs a number based on adding up negative powers of two based on the values of genes
+	 *   1 -- add that power, 0 -- don't add it.
+	 *
+	 * @return	Double value of this Gene. Might lose some precision, if the Gene's length is especially long.
+	 */
 	public double toDouble()
 	{
 		double ret = 0.0;
@@ -444,13 +546,22 @@ class Gene
 
 	}
 
-	// Return the boolean array that this gene is based on.
+	/**
+	 * Return the boolean array that this gene is based on.
+	 *
+	 * @return	The array of boolean values that form this Gene.
+	 */
 	public boolean[] getGene()
 	{
 		return geneValues;
 	}
 
-	// Output a string representation of this gene.
+	/**
+	 * Output a String representation of this Gene. This is a trivial String encoding,
+	 *   where for each boolean, a single character is output -- 1 for "True", 0 for "False".
+	 *
+	 * @return	the trivial String encoding of this Gene.
+	 */
 	public String toString()
 	{
 		StringBuffer ret = new StringBuffer();
@@ -466,6 +577,15 @@ class Gene
 		return ret.toString();
 	}
 
+	/**
+	 * Output a more complex encoded String representation of this Gene. The encoding is clever. For every seven bits,
+	 *   we encode one byte. Positive and negative values are used, and the bytes values [0,32] are skipped, as they
+	 *   form the control characters of ASCII when encoded into a String. This can cause display and other irregularities
+	 *   so this encoding skips them -- which is also why negative numbers are used (to allow 127 values to be encoded into
+	 *   a single Signed Byte).
+	 *
+	 * @return	A String encoded using this more complex and dense scheme.
+	 */
 	public String toEncodedString()
 	{
 		int leftover = geneValues.length % 7;
@@ -495,42 +615,26 @@ class Gene
 		return new String(arr);
 	}
 
-/*	public String toEncodedString()
-	{
-		boolean[] enc = geneValues;
-
-		int leftover = geneValues.length % 7;
-
-		byte[] arr = new byte[ (int) Math.ceil((double) geneValues.length / 7.0) ];
-
-		int b = 0; int i = 7 - leftover;
-
-		for (int a = 0; a < geneValues.length; a++)
-		{
-			arr[b] += (byte) ( (geneValues[a]) ? Math.pow(2, i) : 0 );
-
-			i++;
-			if (i == 7)
-			{
-				b ++;
-				i = 0;
-			}
-		}
-
-		return new String(arr);
-	}*/
-
+	/**
+	 * Returns the number of Bytes necessary to encode this Gene.
+	 */
 	public int encodingByteSize()
 	{
 		return (int) Math.ceil((double) geneValues.length / 7.0);
 	}
 
+	/**
+	 * Returns the number of bits in this Gene.
+	 */
 	public int encodingFieldSize()
 	{
 		return geneValues.length;
 	}
 
-	// Mutate the gene at some random point.
+	/**
+	 * Mutate the gene at some random point. This mutation is in-place, meaning that
+	 *   the active Gene is modified.
+	 */
 	public void mutate()
 	{
 		// pick a random spot to mutate.
@@ -540,12 +644,14 @@ class Gene
 		geneValues[b] = !geneValues[b]; // flip the bit!
 	}
 
-	// Clone the gene -- make an exact duplicate
+	/**
+	 * Clone the gene -- make an exact duplicate, using the boolean array that backs the Gene.
+	 *
+	 * @see {@link Gene(boolean[])}
+	 */
 	public Gene clone()
 	{
 		Gene ret = new Gene(getGene());
 		return ret;
 	}
-
-
 }
