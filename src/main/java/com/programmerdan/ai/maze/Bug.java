@@ -1,18 +1,19 @@
 package com.programmerdan.ai.maze;
 
-/*
-	Programmer: Daniel J. Boston
-	Date: May 7, 2007
-	Class: CS 370
-
-	Basic Bug -- with location, direction, success, failure, etc.
-	This is built on a Chromosome sequence, and contains a NeuralNetwork which is built based on the Chromosome sequence.
-*/
+/**
+ * Basic Bug, which extends {@link Position}. It has location, direction, success, failure, etc.
+ *   A Bug is built around the idea of Inputs (senses), Outputs (direction and velocity), and a Brain to
+ *   tie them together ({@link NeuralNetwork}). The brain is built using a Chromosome sequence.
+ * This is a fascinating idea, lending itself to the idea that future generations will inherit the
+ *   brain characteristics of their forbears. Other future ideas could include epigentics -- allowing
+ *   the "final" state of a Bug to influence their children.
+ * Another fascinating idea would be to build the whole bug -- all variables in entire -- from a Chromosome.
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 May 7, 2007
+ */
 public class Bug extends Position
 {
-	//private double x; // location
-	//private double y;
-
 	private double direction; // rotation
 	private double velocity; // motion
 
@@ -24,9 +25,11 @@ public class Bug extends Position
 
 	private double fitness;
 
-	// inputs
+	/** Distance input flag. The input which should be a normalized distance to the nearest object seen */
 	public static int DISTANCE = 0;
+	/** Position input flag. The input which should be a normalized angle to the nearest object seen */
 	public static int POSITION = 1;
+	/** Type input flag. The input which should indicate what is seen; wall, other bug, etc. */
 	public static int TYPE = 2;
 
 	private int INPUTS = 4; // lets make this variable now.
@@ -34,16 +37,33 @@ public class Bug extends Position
 	private int HIDDENS = 5;
 	private int HIDDENW = 7;
 
+	/**
+	 * Returns the number of inputs for this bug.
+	 *
+	 * @return Number of inputs this bug expects.
+	 */
 	public int INPUTS() { return INPUTS; }
+	/**
+	 * Returns the number of hidden layers in the brain of this bug.
+	 *
+	 * @return Number of hidden layers.
+	 */
 	public int HIDDENS() { return HIDDENS; }
+	/**
+	 * Returns the number of neurons in each hidden layer of the brain of this bug.
+	 *
+	 * @return Number of neurons in each hidden layer.
+	 */
 	public int HIDDENW() { return HIDDENW; }
 
 	private double[] inputStore;
 
-	// outputs
+	/** The Velocity output parameter flag */
 	public static int VEL = 0;
+	/** The Delta (direction) output parameter flag */
 	public static int DELTA = 1;
 
+	/** The number of outputs for this bug */
 	public static int OUTPUTS = 2;
 
 	private double[] outputStore;
@@ -52,6 +72,16 @@ public class Bug extends Position
 	private Chromosome dna;
 	private NeuralNetwork brain;
 
+	/**
+	 * Estimates the size of the Chromosome needed to set up this bug based on the number of
+	 *   inputs, number of hidden layers, and size of each hidden layer.
+	 * Factors in things like learning, forgetting, activation thresholds and intra-neuron weights.
+	 *
+	 * @param	inputs			The number of inputs this brain expects.
+	 * @param	hiddenWidth		The number of neurons in each hidden layer.
+	 * @param	hiddens			The number of hidden layers.
+	 * @return					The recommended Chromosome size to support a bug with these brain characteristics.
+	 */
 	public static int estimateChromosome(int inputs, int hiddenWidth, int hiddens)
 	{
 		int genes = 2; // for the basic two genes defining learning and forgetting.
@@ -71,7 +101,24 @@ public class Bug extends Position
 		return genes;
 	}
 
-	/** The bug's brain size is controlled by hiddenwidth and hidden size. Choose widths and size appropriate to the number of inputs. **/
+	/**
+	 * The Bug's brain size is controlled by hiddenwidth and hidden size. Choose widths and size appropriate to the number of inputs.
+	 * There are quite a few other factors here, each described below.
+	 *
+	 * @param	_x				The starting X coord of this Bug.
+	 * @param	_y				The starting Y coord of this Bug.
+	 * @param	_dir			The starting direction of this Bug (an angle, not in radians).
+	 * @param	_vel			The starting velocity of this Bug.
+	 * @param	_rotate			The rotation multiple of this Bug (e.g. this Bug can rotate faster or slower than other Bugs).
+	 * @param	_speed			The velocity multiple of this Bug (e.g. this Bug is quicker or slower than other Bugs).
+	 * @param	_inputs			The input classes -- determines the way to interpret the Gene used to weight this input will be constructed.
+	 *							  Class 0 uses function {@link midGene()}, class 1 uses {@link fitGene()}, and any other class uses {@link tinGene()}.
+	 * 							  Note that regardless of class, {@link AF_Tanh} is the {@link ActivationFunction} used.
+	 * @param	_hiddenwidth	The size of every hidden brain layer.
+	 * @param	_hiddensize		The number of hidden layers.
+	 * @param	_outputs		The output classes -- determines which {@link ActivationFunction} applies to the outputs.
+	 * @param	_DNA			The DNA to use when building the bug's brain.
+	 **/
 	public Bug(double _x, double _y, double _dir, double _vel, double _rotate, double _speed, int[] _inputs, int _hiddenwidth, int _hiddensize, int[] _outputs, Chromosome _DNA)
 	{
 		super(_x, _y);
@@ -111,22 +158,44 @@ public class Bug extends Position
 		}
 	}
 
+	/**
+	 * Formats a Gene's Double value using the {@link fit(double)} function.
+	 *
+	 * @param	i	Index of gene to "fit".
+	 * @return		The result of the "fit" operation on the Double value of the {@link Gene}.
+	 */
 	private double fitGene(int i)
 	{
 		return fit(dna.getGene(i).toDouble());
 	}
 
+	/**
+	 * Formats a Gene's Double value using the {@link mid(double)} function.
+	 *
+	 * @param	i	Index of gene to "mid".
+	 * @return		The result of the "mid" operation on the Double value of the {@link Gene}.
+	 */
 	private double midGene(int i)
 	{
 		return mid(dna.getGene(i).toDouble());
 	}
 
+	/**
+	 * Formats a Gene's Double value using the {@link tin(double)} function.
+	 *
+	 * @param	i	Index of gene to "tin".
+	 * @return		The result of the "tin" operation on the Double value of the {@link Gene}.
+	 */
 	private double tinGene(int i)
 	{
 		return tin(dna.getGene(i).toDouble());
 	}
 
-	// Builds a brain based on certain parameters.
+	/**
+	 * Builds a brain based on certain parameters.
+	 *
+	 * @see {@link Bug}
+ 	 */
 	private void build()
 	{
 		if (dna != null) // now compute size of needed chromosome.
@@ -214,140 +283,103 @@ public class Bug extends Position
 	// Note: turns out that the weights inside a mature brain can get larger than is possible to encode in my current scheme -- the "max weight"
 	//       is currently 10 inside the brains ... simplest would be to "expand" a chromosome on start to fit within this maximum value.
 
-	// Puts together the "brain" for this bug based on the gene's in the chromosome
-/*	private void build()
-	{
-		if (dna != null)
-		{
-			int i = 0;
-
-			//brain = new NeuralNetwork(4, 8, 14, 3, midGene(i++), midGene(i++));
-			brain = new NeuralNetwork(4, 5, 7, 3, midGene(i++), midGene(i++));
-
-			brain.addInput(fitGene(i++), midGene(i++), AF_Tanh.Default); // distance input 0, 1.0
-			brain.addInput(fitGene(i++), fitGene(i++), AF_Tanh.Default); // type: -1, 1
-			brain.addInput(fitGene(i++), midGene(i++), AF_Tanh.Default); // distance input 0, 1.0
-			brain.addInput(fitGene(i++), fitGene(i++), AF_Tanh.Default); // type: -1,1
-
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-
-
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-
-
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-
-
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-
-
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			brain.addHidden(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-
-
-			// Velocity Modifier
-			brain.addOutput(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Sigmoid.Default);
-			// Left Turn Rate
-			brain.addOutput(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-			// Right Turn Rate
-			brain.addOutput(new double[] {fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble()),fit(dna.getGene(i++).toDouble())}, fit(dna.getGene(i++).toDouble()), AF_Tanh.Default);
-
-			//rotateMult = dna.getGene(i++).toDouble() * 4;
-
-			if (i > dna.numGenes()) // invalid! oh no!
-			{
-				brain = null;
-				System.out.println("Lobotomy");
-			}
-		}
-	}
-*/
+	/**
+	 * Returns the {@link Chromosome} sequence used to create the bug's brain.
+	 *
+	 * @return	the DNA of this bug's brain (a {@link Chromosome} object).
+	 */
 	public Chromosome getDNA()
 	{
 		return dna;
 	}
 
+	/**
+	 * Returns the (@link NeuralNetwork} "brain" that this bug contains.
+	 *
+	 * @return	the "brain" of this bug (a {@link NeuralNetwork} object).
+	 */
 	public NeuralNetwork getBrain()
 	{
 		return brain;
 	}
 
-	/*public double getX()
-	{
-		return x;
-	}*/
-
+	/**
+	 * Sets the X coord of this bug.
+	 *
+	 * @param	_x	the new X coord of this Bug.
+	 */
 	public void setX(double _x)
 	{
 		x = _x;
 	}
 
-	/*public double getY()
-	{
-		return y;
-	}*/
-
+	/**
+	 * Sets the Y coord of this bug.
+	 *
+	 * @param	_y	the new Y coord of this Bug.
+	 */
 	public void setY(double _y)
 	{
 		y = _y;
 	}
 
+	/**
+	 * Sets the X and Y coord of this bug.
+	 *
+	 * @param	_x	the new X coord of this Bug.
+	 * @param	_y	the new Y coord of this Bug.
+	 */
 	public void setPosition(double _x, double _y)
 	{
 		setX(_x); setY(_y);
 	}
 
-
+	/**
+	 * Gets the current direction of this bug.
+	 *
+	 * @return	the Direction of this bug (an angle, not in radians).
+	 */
 	public double getDir()
 	{
 		return direction;
 	}
 
+	/**
+	 * Sets the current direction of this bug arbitarily.
+	 *
+	 * @param	_dir	the new direction of this bug (an angle, not in radians).
+	 */
 	public void setDir(double _dir)
 	{
 		direction = _dir;
 	}
 
-
+	/**
+	 * Gets the current velocity of this bug.
+	 *
+	 * @return	the Velocity of this bug.
+	 */
 	public double getVel()
 	{
 		return velocity;
 	}
 
+	/**
+	 * Sets the current velocity of this bug arbitrarily.
+	 *
+	 * @param	_vel	the new velocity of this bug.
+	 */
 	public void setVel(double _vel)
 	{
 		velocity = _vel;
 	}
 
+	/**
+	 * Gets the "true" velocity of this bug. Gets set by the {@link step()} function,
+	 *   based on the expected velocity of the bug adjusted for wall/obstacle interactions.
+	 *
+	 * @return	the True Velocity of the bug, adjusted for environment interactions.
+	 */
 	public double getTrueVel()
 	{
 		if (trueVector == null)
@@ -356,7 +388,11 @@ public class Bug extends Position
 			return Math.sqrt( Math.pow( trueVector[0], 2.0) + Math.pow( trueVector[1], 2.0 ) );
 	}
 
-	// Get vector -- multiplies the direction by the velocity, based on the multipliers (which are probably set to 1)
+	/**
+	 * Get velocity vector -- multiplies the direction by the velocity, based on the multipliers set at bug creation.
+	 *
+	 * @return	a two-element array, with element 0 being X vector component, element 1 being Y vector component.
+	 */
 	public double[] getVector()
 	{
 		// directed velocity
@@ -371,12 +407,23 @@ public class Bug extends Position
 
 	private double[] trueVector;
 
+	/**
+	 * Returns the True Vector, in component form.
+	 *
+	 * @return	a two-element array, with element 0 being X true vector component, element 1 being Y true vector component.
+	 */
 	public double[] getTrueVector()
 	{
 		return trueVector;
 	}
 
-	// Applies the input to the brain.
+	/**
+	 * Applies an input value to a specific input in the brain.
+	 *   Also stores it in a temporary input store.
+	 *
+	 * @param	_idx	The input at index to update
+	 * @param	_val	The value to apply to that input Neuron.
+	 */
 	public void setInput(int _idx, double _val)
 	{
 		if ( ( _idx >= 0 ) && ( _idx < INPUTS ) )
@@ -387,7 +434,12 @@ public class Bug extends Position
 		}
 	}
 
-	// Get inputs if you select the proper input.
+	/**
+	 * Get the most recent input value of a specific input index.
+	 *
+	 * @param	_idx	The input index to query
+	 * @return			The most recent value assigned to this input.
+	 */
 	public double getInput(int _idx)
 	{
 		if ( ( _idx >= 0 ) && ( _idx < INPUTS ) )
@@ -397,98 +449,185 @@ public class Bug extends Position
 		return  Float.NaN;
 	}
 
-	// Grab outputs from the brain.
+	/**
+	 * Get the most recent ouptut value of a specific output index.
+	 *
+	 * @param	_idx	The output index to query
+	 * @return			The most recent output value generated
+	 */
 	public double getOutput(int _idx)
 	{
-		if ( ( _idx >= 0 ) && ( _idx < INPUTS ) )
+		if ( ( _idx >= 0 ) && ( _idx < OUTPUTS ) )
 		{
 			return outputStore[_idx];
 		}
 		return  Float.NaN;
 	}
 
+	/**
+	 * Sets the fitness of this bug.
+	 *
+	 * @param	fit		This bug's new fitness value. Also increases the max observed fitness if necessary.
+	 *
+	 * @see {@link maxfitness}
+	 */
 	public void setFitness(double fit)
 	{
 		fitness = fit;
 		if (fit > maxfitness) maxfitness = fit;
 	}
 
+	/**
+	 * A tracking variable to keep tabs on the highest fitness achieved by this bug.
+	 */
 	private double maxfitness = Double.MIN_VALUE;
 
+	/**
+	 * Gets the current fitness of this bug.
+	 *
+	 * @return	the current fitness.
+	 */
 	public double getFitness()
 	{
 		return fitness;
 	}
 
+	/**
+	 * Gets the maximum observed fitness of this bug.
+	 *
+	 * @return	the maximum observed fitness.
+	 */
 	public double getMaxFitness()
 	{
 		return maxfitness;
 	}
 
-	// update success.
+	/**
+	 * Increment the number of successes observed by one.
+	 */
 	public void incSuccess()
 	{
 		success++;
 	}
 
+	/**
+	 * Zeroes out the number of successes.
+	 */
 	public void clrSuccess()
 	{
 		success = 0;
 	}
 
+	/**
+	 * Returns the current number of successes.
+	 *
+	 * @return	the number of successes observed
+	 */
 	public int getSuccess()
 	{
 		return success;
 	}
 
-	// update failure.
+	/**
+	 * Increment the number of failures observed by one.
+	 */
 	public void incFailure()
 	{
 		failure++;
 	}
 
+	/**
+	 * Zeroes out the number of failures.
+	 */
 	public void clrFailure()
 	{
 		failure = 0;
 	}
 
+	/**
+	 * Returns the current number of failures.
+	 *
+	 * @return	the number of failures observed.
+	 */
 	public int getFailure()
 	{
 		return failure;
 	}
 
-	// Manipulators for Gene values.
+	/**
+	 * Manipulator for Gene values, which are always in the range [0.0, 1.0).
+	 * This function fits a gene value into the range [-0.5, 0.5).
+	 *
+	 * @return	the input value adjusted by -0.5
+	 */
 	private double fit(double _a)
 	{
 		return _a - .5;
 	}
 
+	/**
+	 * Reverse manipulator for Gene values.
+	 *
+	 * @return	the input value adjusted by +0.5.
+	 * @see {@link fit(double)}
+	 */
 	private double unfit(double _a)
 	{
 		return _a + .5;
 	}
 
+	/**
+	 * Manipulator for Gene values, which are always in the range [0.0, 1.0).
+	 * This function fits a gene value into the range [0.0, 0.1).
+	 *
+	 * @return	the input value multiplied by 0.1
+	 */
 	private double tin(double _a)
 	{
 		return _a * .1;
 	}
 
+	/**
+	 * Reverse manipulator for Gene values.
+	 *
+	 * @return	the input value divided by 0.1
+	 * @see {@link tin(double)}
+	 */
 	private double untin(double _a)
 	{
 		return _a / .1;
 	}
 
+	/**
+	 * Manipulator for Gene values, which are always in the range [0.0, 1.0).
+	 * This function fits a gene value into the range [0.0, 0.5).
+	 *
+	 * @return	the input value multiplied by 0.5
+	 */
 	private double mid(double _a)
 	{
 		return _a * .5;
 	}
 
+	/**
+	 * Reverse manipulator for Gene values.
+	 *
+	 * @return	the input value divided by 0.5
+	 * @see {@link mid(double)}
+	 */
 	private double unmid(double _a)
 	{
 		return _a / .5;
 	}
 
-	// Step the "brain" and apply the outputs to the velocity and direction.
+	/**
+	 * Applies most recent input values to the brain inputs.
+	 * Steps the "brain", and apply the resulting outputs to the velocity and direction.
+	 *
+	 * @param	sm	The map to use in constraining the motion of this bug.
+	 * TODO: refactor so the bug is not tightly dependent on a Map. It should instead ask the simulation
+	 *        environment if the motion is acceptable, and if not, what kind of motion is acceptable.
+	 */
 	public void step(SimulationMap sm)
 	{
 		brain.setInputs( inputStore );
