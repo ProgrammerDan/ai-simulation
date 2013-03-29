@@ -1,21 +1,25 @@
 package com.programmerdan.ai.maze;
 
-/*
-	Programmer: Daniel J. Boston
-	Date: May 7, 2007
-	Class: CS 370
-
-	Activation function plug-in for Neurons. Based on functions in the lecture notes.
-
-*/
+/**
+ * Activation function plug-in interface for Neurons. Based on standard activation function
+ *   types.
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 May 7, 2007
+ */
 public interface ActivationFunction
 {
 	public double activate (double[] _in, Neuron[] _n, double[] _w, double _limit);
 }
 
-/*
-	Modified Sigmoid -- my own invention, expands sigmoid between -1 and 1.
-*/
+/**
+ * Modified Sigmoid -- my own invention, expands sigmoid between -1 and 1.
+ *   A sigmoid is not a hard activation function, meaning that it activates
+ *   variably depending on the inputs and weight.
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ * @version 1.0 May 7, 2007
+ */
 class AF_ModifiedSigmoid implements ActivationFunction
 {
 	public static AF_ModifiedSigmoid Default = new AF_ModifiedSigmoid();
