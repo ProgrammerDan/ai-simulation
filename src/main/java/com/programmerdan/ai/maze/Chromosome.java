@@ -449,7 +449,7 @@ class Gene
 
 		for (int a = 0; a < size; a++)
 		{
-			geneval *= 2.0
+			geneval *= 2.0;
 
 			if (geneval >= 1.0)
 			{

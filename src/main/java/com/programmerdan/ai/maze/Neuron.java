@@ -27,7 +27,7 @@ public class Neuron
 	 * @return	the array of doubles representing the current weights applied to each input.
 	 */
 	public double[] getInWeights() {
-		return inListWeights;
+		return inListWeight;
 	}
 	private Neuron[] outList;
 
