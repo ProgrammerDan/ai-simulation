@@ -154,7 +154,9 @@ public class Simulation extends JPanel implements MouseListener
 			draw.init();
 
 			draw.start(); // run the simulation!
-		} catch (IOException e) { System.out.println("File error" + e.toString() ); }
+		} catch (IOException e) {
+			System.out.println("File error" + e.toString() );
+		}
 	}
 
 	public int getSimSizeX()
