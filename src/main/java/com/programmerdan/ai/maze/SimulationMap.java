@@ -11,17 +11,19 @@ import org.slf4j.LoggerFactory;
  *
  * @author Daniel Boston <programmerdan@gmail.com>
  * @version 1.0 2007
+ *   Initial version, for a class project
  * @version 1.0-mvn March 23, 2013
- *
- * TODO: refactor main() as test
- * TODO: refactor to use logging framework
+ *   Mavenized the project
+ * @version 1.01 March 31, 2013
+ *   Refactored out testing patterns, organized code, added comments, added logging framework.
  */
 public class SimulationMap {
+	/* Class Attributes */
+
 	/**
 	 * Logger for this class.
 	 */
 	private final Logger log = LoggerFactory.getLogger(SimulationMap.class);
-
 
 	/**
 	 * The lines of the wall
@@ -39,11 +41,11 @@ public class SimulationMap {
 	/**
 	 * The last distances to nearby walls detected by {@link nearestWalls(SimpleLine[])}
 	 */
-	public double[] lastNear = null;
+	private double[] lastNear = null;
 	/**
 	 The last wall IDs detected by {@link nearestWalls{SimpleLine[])}
 	 */
-	public int[] lastWallIdx = null;
+	private int[] lastWallIdx = null;
 
 	/**
 	 * Wall buffer -- "constant" parameter saying how close to the wall a movement vector is allowed.
@@ -78,6 +80,9 @@ public class SimulationMap {
 	 * the peak of the path
 	 */
 	private double pathPeak = -1.0;
+
+
+	/* ACCESSORS/MUTATORS */
 
 
 	/**
@@ -143,6 +148,74 @@ public class SimulationMap {
 	public double getNearThreshold() {
 		return pathNearThreshold;
 	}
+
+	/**
+	 * Returns the length of the path. Computes the path on first request.
+	 *
+	 * @return	The length of the path.
+	 */
+	public double pathLength() {
+		if (pathLength < 0) {
+			pathLength = 0.0;
+
+			for (int j = 0; j < pathLines.length; j++) {
+				pathLength += Math.sqrt( Math.pow(pathLines[j].x2() - pathLines[j].x1(), 2.0) + Math.pow(pathLines[j].y2() - pathLines[j].y1(), 2.0) );
+			}
+		}
+
+		return pathLength;
+	}
+
+	/**
+	 * Honestly not sure what this is doing. Takes the log of the {@link pathLength()}.
+	 *
+	 * @return	the mean
+	 */
+	private double pathMean() {
+		if (pathMean < 0.0) {
+			pathMean = Math.log(pathLength()) + Math.pow(.5,2.0);
+		}
+		return pathMean;
+	}
+
+	/**
+	 * Again, I can't remember what this does. Takes E to the power of the Mean.
+	 *
+	 * @return	the mode
+	 */
+	private double pathMode() {
+		if (pathMode < 0.0) {
+			pathMode = Math.pow(Math.E, pathMean() - Math.pow(.5, 2.0) );
+		}
+		return pathMode;
+	}
+
+	/**
+	 * The peak of the path. Again, can't remember what this is doing.
+	 *
+	 * @return	the peak
+	 */
+	private double pathPeak() {
+		if (pathPeak < 0.0) {
+			pathPeak = (1.0 / ( pathMode() * .5 * Math.sqrt( 2.0 * Math.PI ) ) ) * Math.exp( - ( Math.pow( ( Math.log(pathMode()) - pathMean() ), 2.0 ) / ( 2.0 * Math.pow( 0.5, 2.0 ) ) ) ) ;
+		}
+
+		return pathPeak;
+	}
+
+	/**
+	 * The travel distance along the path.
+	 *
+	 * @param	travel	The travel along the path
+	 * @return			The adjusted travel along the path
+	 */
+	public double pathTravel(double travel) {
+		return (1.0 / pathPeak() ) * (1.0 / ( travel * .5 * Math.sqrt( 2.0 * Math.PI ) )) * Math.exp( - ( Math.pow( ( Math.log(travel) - pathMean() ), 2.0 ) / ( 2.0 * Math.pow( 0.5, 2.0 ) ) ) );
+	}
+
+
+	/* CONSTRUCTORS */
+
 
 	/**
 	 * For internal unit tests, instantiates the map with an arbitrary set of walls and paths
@@ -233,58 +306,6 @@ public class SimulationMap {
 	}
 
 	/**
-	 * This functions is used to compute the "fitness" of motion along the map optimal path,
-	 * after all steps complete.
-	 *
-	 * We only call when we've reached the limit. Otherwise no decay!
-	 *
-	 * @param	progressFitness	The current progress
-	 * @param	simLengthCap	Simulation length cap
-	 * @return					Double value of the current fitness
-	 */
-	private static double computeStepFitness(double progressFitness, double simLengthCap) {
-		double b = 10.0 / simLengthCap;
-
-		double x = progressFitness * simLengthCap;
-
-		// now use a heavily modified sigmoid type function
-		double sig = 2.0 / (1.0 + Math.exp( (-(x - simLengthCap)) * b) );
-
-		if (sig > 1.0) {
-			return 1.0; // we are making good progress (at least in step with the simulation's progress.
-		} else {
-			return sig; // we are not making good enough progress.
-		}
-	}
-
-	/**
-	 * Normalize the distances to objects based on sight ranges and min, max values of sight ability.
-	 *
-	 * @param	distances	distances to objects
-	 * @param	sightranges	sight ranges
-	 * @param	maxvalue	value indicating nothing seen
-	 * @param	minvalue	value indicating starting point
-	 * @return				normalized distances to seen (or if max, not seen) objects
-	 */
-	public static double[] normalizeSight(double[] distances, double[] sightranges, double maxvalue, double minvalue) {
-		if (distances.length != sightranges.length) {
-			return null;
-		}
-
-		double[] normalized = new double[distances.length];
-
-		for (int i = 0; i < distances.length; i++) {
-			if (distances[i] > sightranges[i]) {// nothing within range.
-				normalized[i] = maxvalue;
-			} else {
-				normalized[i] = minvalue + (maxvalue - minvalue) * (distances[i] / sightranges[i]); // simple linear interpolation!
-			}
-		}
-
-		return normalized;
-	}
-
-	/**
 	 * Iterates over all wall lines and determines the coordinate extent of the map.
 	 *
 	 * @return	Array of map extents in the order min x, max x, min y, max y
@@ -306,78 +327,6 @@ public class SimulationMap {
 		}
 
 		return new double[] { minx, maxx, miny, maxy };
-	}
-
-	/**
-	 * A utility method used to draw maps as string (for debugging).
-	 *
-	 * @param	minx	Map's min X coord
-	 * @param	maxx	Map's max X coord
-	 * @param	miny	Map's min Y coord
-	 * @param	maxy	Map's max Y coord
-	 * @param	x		"Player" X coord location
-	 * @param   y		"Player" Y coord location
-	 * @param	vx		"Player" X velocity
-	 * @param	vy		"Player" Y velocity
-	 * @param	unit	Unit of distance
-	 *
-	 * @return			A string representation of the map
-	 */
-	public String drawMap(double minx, double maxx, double miny, double maxy, double x, double y, double vx, double vy, double unit) {
-		StringBuffer mapout = new StringBuffer();
-
-		// TODO: Why does this duplicate mapExtent? Instead of accepting extents, just calculate using mapExtent()
-		// doublecheck that range fits extent.
-		for (SimpleLine wall : wallLines) {
-			if (wall.x1() < minx) minx = wall.x1();
-			if (wall.x2() < minx) minx = wall.x2();
-			if (wall.x1() > maxx) maxx = wall.x1();
-			if (wall.x2() > maxx) maxx = wall.x2();
-			if (wall.y1() < miny) miny = wall.y1();
-			if (wall.y2() < miny) miny = wall.y2();
-			if (wall.y1() > maxy) maxy = wall.y1();
-			if (wall.y2() > maxy) maxy = wall.y2();
-		}
-
-		for (double j = maxy; j >= miny; j -= unit) {
-			for (double i = minx; i <= maxx; i += unit) {
-				// draw player
-				if ( Math.sqrt( Math.pow(i - x, 2.0) + Math.pow(j - y, 2.0) ) <= unit / 1.414214) { // within sqrt(2) unit distance
-					mapout.append("P");
-				} else if (Line2D.ptSegDist( x, y, x-vx, y-vy, i, j) <= unit / 2.0) { // trailing vector
-					mapout.append("o");
-				} else {
-					boolean taken = false;
-
-					// loop through walls, see if a wall occupies this space.
-					for (SimpleLine wall : wallLines) {
-						if ( Line2D.ptSegDist(wall.x1(), wall.y1(), wall.x2(), wall.y2(), i, j) <= unit / 2.0 ) {
-							mapout.append("#");
-							taken = true;
-							break;
-						}
-					}
-
-					if (!taken) {
-						for (SimpleLine path : pathLines) {
-							if ( Line2D.ptSegDist(path.x1(), path.y1(), path.x2(), path.y2(), i, j) <= unit / 2.0 ) {
-								mapout.append("+");
-								taken = true;
-								break;
-							}
-						}
-					}
-
-					if (!taken) {
-						mapout.append(" ");
-					}
-				}
-			}
-
-			mapout.append("\n");
-		}
-
-		return mapout.toString();
 	}
 
 	/**
@@ -627,66 +576,126 @@ public class SimulationMap {
 	}
 
 	/**
-	 * Returns the length of the path. Computes the path on first request.
+	 * A utility method used to draw maps as string (for debugging).
 	 *
-	 * @return	The length of the path.
+	 * @param	minx	Map's min X coord
+	 * @param	maxx	Map's max X coord
+	 * @param	miny	Map's min Y coord
+	 * @param	maxy	Map's max Y coord
+	 * @param	x		"Player" X coord location
+	 * @param   y		"Player" Y coord location
+	 * @param	vx		"Player" X velocity
+	 * @param	vy		"Player" Y velocity
+	 * @param	unit	Unit of distance
+	 *
+	 * @return			A string representation of the map
 	 */
-	public double pathLength() {
-		if (pathLength < 0) {
-			pathLength = 0.0;
+	public String drawMap(double minx, double maxx, double miny, double maxy, double x, double y, double vx, double vy, double unit) {
+		StringBuffer mapout = new StringBuffer();
 
-			for (int j = 0; j < pathLines.length; j++) {
-				pathLength += Math.sqrt( Math.pow(pathLines[j].x2() - pathLines[j].x1(), 2.0) + Math.pow(pathLines[j].y2() - pathLines[j].y1(), 2.0) );
+		// TODO: Why does this duplicate mapExtent? Instead of accepting extents, just calculate using mapExtent()
+		// doublecheck that range fits extent.
+		for (SimpleLine wall : wallLines) {
+			if (wall.x1() < minx) minx = wall.x1();
+			if (wall.x2() < minx) minx = wall.x2();
+			if (wall.x1() > maxx) maxx = wall.x1();
+			if (wall.x2() > maxx) maxx = wall.x2();
+			if (wall.y1() < miny) miny = wall.y1();
+			if (wall.y2() < miny) miny = wall.y2();
+			if (wall.y1() > maxy) maxy = wall.y1();
+			if (wall.y2() > maxy) maxy = wall.y2();
+		}
+
+		for (double j = maxy; j >= miny; j -= unit) {
+			for (double i = minx; i <= maxx; i += unit) {
+				// draw player
+				if ( Math.sqrt( Math.pow(i - x, 2.0) + Math.pow(j - y, 2.0) ) <= unit / 1.414214) { // within sqrt(2) unit distance
+					mapout.append("P");
+				} else if (Line2D.ptSegDist( x, y, x-vx, y-vy, i, j) <= unit / 2.0) { // trailing vector
+					mapout.append("o");
+				} else {
+					boolean taken = false;
+
+					// loop through walls, see if a wall occupies this space.
+					for (SimpleLine wall : wallLines) {
+						if ( Line2D.ptSegDist(wall.x1(), wall.y1(), wall.x2(), wall.y2(), i, j) <= unit / 2.0 ) {
+							mapout.append("#");
+							taken = true;
+							break;
+						}
+					}
+
+					if (!taken) {
+						for (SimpleLine path : pathLines) {
+							if ( Line2D.ptSegDist(path.x1(), path.y1(), path.x2(), path.y2(), i, j) <= unit / 2.0 ) {
+								mapout.append("+");
+								taken = true;
+								break;
+							}
+						}
+					}
+
+					if (!taken) {
+						mapout.append(" ");
+					}
+				}
+			}
+
+			mapout.append("\n");
+		}
+
+		return mapout.toString();
+	}
+
+	/**
+	 * This function is used to compute the "fitness" of motion along the map optimal path,
+	 * after all steps complete.
+	 *
+	 * We only call when we've reached the limit. Otherwise no decay!
+	 *
+	 * @param	progressFitness	The current progress
+	 * @param	simLengthCap	Simulation length cap
+	 * @return					Double value of the current fitness
+	 */
+	private static double computeStepFitness(double progressFitness, double simLengthCap) {
+		double b = 10.0 / simLengthCap;
+
+		double x = progressFitness * simLengthCap;
+
+		// now use a heavily modified sigmoid type function
+		double sig = 2.0 / (1.0 + Math.exp( (-(x - simLengthCap)) * b) );
+
+		if (sig > 1.0) {
+			return 1.0; // we are making good progress (at least in step with the simulation's progress.
+		} else {
+			return sig; // we are not making good enough progress.
+		}
+	}
+
+	/**
+	 * Normalize the distances to objects based on sight ranges and min, max values of sight ability.
+	 *
+	 * @param	distances	distances to objects
+	 * @param	sightranges	sight ranges
+	 * @param	maxvalue	value indicating nothing seen
+	 * @param	minvalue	value indicating starting point
+	 * @return				normalized distances to seen (or if max, not seen) objects
+	 */
+	public static double[] normalizeSight(double[] distances, double[] sightranges, double maxvalue, double minvalue) {
+		if (distances.length != sightranges.length) {
+			return null;
+		}
+
+		double[] normalized = new double[distances.length];
+
+		for (int i = 0; i < distances.length; i++) {
+			if (distances[i] > sightranges[i]) {// nothing within range.
+				normalized[i] = maxvalue;
+			} else {
+				normalized[i] = minvalue + (maxvalue - minvalue) * (distances[i] / sightranges[i]); // simple linear interpolation!
 			}
 		}
 
-		return pathLength;
-	}
-
-	/**
-	 * Honestly not sure what this is doing. Takes the log of the {@link pathLength()}.
-	 *
-	 * @return	the mean
-	 */
-	private double pathMean() {
-		if (pathMean < 0.0) {
-			pathMean = Math.log(pathLength()) + Math.pow(.5,2.0);
-		}
-		return pathMean;
-	}
-
-	/**
-	 * Again, I can't remember what this does. Takes E to the power of the Mean.
-	 *
-	 * @return	the mode
-	 */
-	private double pathMode() {
-		if (pathMode < 0.0) {
-			pathMode = Math.pow(Math.E, pathMean() - Math.pow(.5, 2.0) );
-		}
-		return pathMode;
-	}
-
-	/**
-	 * The peak of the path. Again, can't remember what this is doing.
-	 *
-	 * @return	the peak
-	 */
-	private double pathPeak() {
-		if (pathPeak < 0.0) {
-			pathPeak = (1.0 / ( pathMode() * .5 * Math.sqrt( 2.0 * Math.PI ) ) ) * Math.exp( - ( Math.pow( ( Math.log(pathMode()) - pathMean() ), 2.0 ) / ( 2.0 * Math.pow( 0.5, 2.0 ) ) ) ) ;
-		}
-
-		return pathPeak;
-	}
-
-	/**
-	 * The travel distance along the path.
-	 *
-	 * @param	travel	The travel along the path
-	 * @return			The adjusted travel along the path
-	 */
-	public double pathTravel(double travel) {
-		return (1.0 / pathPeak() ) * (1.0 / ( travel * .5 * Math.sqrt( 2.0 * Math.PI ) )) * Math.exp( - ( Math.pow( ( Math.log(travel) - pathMean() ), 2.0 ) / ( 2.0 * Math.pow( 0.5, 2.0 ) ) ) );
+		return normalized;
 	}
 }
