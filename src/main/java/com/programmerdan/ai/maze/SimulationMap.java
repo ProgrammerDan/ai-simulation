@@ -87,11 +87,10 @@ public class SimulationMap {
 
 	/**
 	 * Getter for the title
-	 * TODO: Let's use standard getter/setter pairs, please.
 	 *
 	 * @return	The title as a {@link String}
 	 */
-	public String title() {
+	public String getTitle() {
 		return title;
 	}
 
@@ -118,7 +117,7 @@ public class SimulationMap {
 	 *
 	 * @return the array of walls
 	 */
-	public SimpleLine[] walls() {
+	public SimpleLine[] getWalls() {
 		return wallLines;
 	}
 
@@ -127,7 +126,7 @@ public class SimulationMap {
 	 *
 	 * @return the array of paths
 	 */
-	public SimpleLine[] paths() {
+	public SimpleLine[] getPaths() {
 		return pathLines;
 	}
 
@@ -136,7 +135,7 @@ public class SimulationMap {
 	 *
 	 * @return	The array of wall IDs
 	 */
-	public int[] lastWallIdx() {
+	public int[] getLastWallIdx() {
 		return lastWallIdx;
 	}
 
@@ -154,7 +153,7 @@ public class SimulationMap {
 	 *
 	 * @return	The length of the path.
 	 */
-	public double pathLength() {
+	public double getPathLength() {
 		if (pathLength < 0) {
 			pathLength = 0.0;
 
@@ -167,13 +166,13 @@ public class SimulationMap {
 	}
 
 	/**
-	 * Honestly not sure what this is doing. Takes the log of the {@link pathLength()}.
+	 * Honestly not sure what this is doing. Takes the log of the {@link getPathLength()}.
 	 *
 	 * @return	the mean
 	 */
-	private double pathMean() {
+	private double getPathMean() {
 		if (pathMean < 0.0) {
-			pathMean = Math.log(pathLength()) + Math.pow(.5,2.0);
+			pathMean = Math.log(getPathLength()) + Math.pow(.5,2.0);
 		}
 		return pathMean;
 	}
@@ -183,9 +182,9 @@ public class SimulationMap {
 	 *
 	 * @return	the mode
 	 */
-	private double pathMode() {
+	private double getPathMode() {
 		if (pathMode < 0.0) {
-			pathMode = Math.pow(Math.E, pathMean() - Math.pow(.5, 2.0) );
+			pathMode = Math.pow(Math.E, getPathMean() - Math.pow(.5, 2.0) );
 		}
 		return pathMode;
 	}
@@ -195,9 +194,11 @@ public class SimulationMap {
 	 *
 	 * @return	the peak
 	 */
-	private double pathPeak() {
+	private double getPathPeak() {
 		if (pathPeak < 0.0) {
-			pathPeak = (1.0 / ( pathMode() * .5 * Math.sqrt( 2.0 * Math.PI ) ) ) * Math.exp( - ( Math.pow( ( Math.log(pathMode()) - pathMean() ), 2.0 ) / ( 2.0 * Math.pow( 0.5, 2.0 ) ) ) ) ;
+			pathPeak = (1.0 / ( getPathMode() * .5 * Math.sqrt( 2.0 * Math.PI ) ) ) *
+							Math.exp( - ( Math.pow( ( Math.log(getPathMode()) - getPathMean() ), 2.0 ) /
+							( 2.0 * Math.pow( 0.5, 2.0 ) ) ) ) ;
 		}
 
 		return pathPeak;
@@ -210,7 +211,8 @@ public class SimulationMap {
 	 * @return			The adjusted travel along the path
 	 */
 	public double pathTravel(double travel) {
-		return (1.0 / pathPeak() ) * (1.0 / ( travel * .5 * Math.sqrt( 2.0 * Math.PI ) )) * Math.exp( - ( Math.pow( ( Math.log(travel) - pathMean() ), 2.0 ) / ( 2.0 * Math.pow( 0.5, 2.0 ) ) ) );
+		return (1.0 / getPathPeak() ) * (1.0 / ( travel * .5 * Math.sqrt( 2.0 * Math.PI ) )) *
+				Math.exp( - ( Math.pow( ( Math.log(travel) - getPathMean() ), 2.0 ) / ( 2.0 * Math.pow( 0.5, 2.0 ) ) ) );
 	}
 
 
@@ -223,9 +225,14 @@ public class SimulationMap {
 	 * @param	testWalls	The walls as {@link SimpleLine}s.
 	 * @param	testPaths	The paths as {@link SimpleLine}s.
 	 */
-	private SimulationMap(SimpleLine[] testWalls, SimpleLine[] testPaths) {
-		wallLines = testWalls;
-		pathLines = testPaths;
+	protected SimulationMap(SimpleLine[] testWalls, SimpleLine[] testPaths) {
+		initialize(testWalls, testPaths);
+	}
+
+	/**
+	 * No-op private default constructor.
+	 */
+	private SimulationMap() {
 	}
 
 	/**
@@ -247,61 +254,147 @@ public class SimulationMap {
 	 * @param	String	mapFile	The map file to load. If file is invalid, fails.
 	 */
 	public SimulationMap(String mapFile) {
-		// TODO: Split up this method a bit. Why is so much in the constructor?
 		try {
 			File map = new File(mapFile);
 
 			BufferedReader br = new BufferedReader( new FileReader( map ) );
 
-			String line = br.readLine();
+			initialize(br);
+		} catch (FileNotFoundException fnfe) {
+			log.error("Unable to load given map file {} \n {}", mapFile, fnfe);
+		} catch (InstantiationException ie) {
+			log.error("Map instantiation failed.", ie);
+		}
+	}
 
-			title = line;
+	/* INITIALIZATION METHODS */
 
-			line = br.readLine();
+	/**
+	 * Initialize a SimulationMap from a BufferedReader (which we expect to wrap a file,
+	 *   but which doesn't have to).
+	 *
+	 * @param	br	The {@link BufferedReader} from which to build this map.
+	 * @throws	{@link InstantiationException}	Thrown if unable to read from the file or file has corrupt contents.
+	 */
+	private void initialize(BufferedReader br) throws InstantiationException {
+		String line;
+		int numLines;
 
-			int numLines = Integer.parseInt(line);
+		title = getLineSafe(br, "Error reading title line of map file.");
 
-			wallLines = new SimpleLine[numLines];
+		try {
+			numLines = Integer.parseInt(getLineSafe(br, "Error reading wall count line of map file."));
+		} catch (NumberFormatException nfe) {
+			log.error("Format error, this map file does not have a wall count line.", nfe);
+			throw new InstantiationException();
+		}
 
-			double X1, X2, Y1, Y2; String[] posplit;
+		wallLines = new SimpleLine[numLines];
 
-			for (int i = 0; i < numLines; i++) {
-				line = br.readLine();
+		double X1;
+		double X2;
+		double Y1;
+		double Y2;
+		String[] posplit;
+
+		for (int i = 0; i < numLines; i++) {
+			try {
+				line = getLineSafe(br, "Failed to read a wall description line.");
 				posplit = line.split(",");
 				X1 = Double.parseDouble(posplit[0]);
 				Y1 = Double.parseDouble(posplit[1]);
 				X2 = Double.parseDouble(posplit[2]);
 				Y2 = Double.parseDouble(posplit[3]);
-				wallLines[i] = new SimpleLine(X1,Y1,X2,Y2);
+			} catch (NumberFormatException nfe2) {
+				log.error("Not every number in the wall description line was parseable.", nfe2);
+				return;
 			}
 
-			line      = br.readLine();
-			numLines  = Integer.parseInt(line);
+			wallLines[i] = new SimpleLine(X1,Y1,X2,Y2);
+		}
 
-			pathLines = new SimpleLine[numLines - 1];
+		try {
+			numLines  = Integer.parseInt(getLineSafe(br, "Error reading path count line of map file."));
+		} catch (NumberFormatException nfe3) {
+			log.error("Format error, this map file does not have a path count line.", nfe3);
+			throw new InstantiationException();
+		}
 
-			line = br.readLine();
+		pathLines = new SimpleLine[numLines - 1];
+
+		try {
+			line = getLineSafe(br, "Failed to read starting X,Y line.");
 			posplit = line.split(",");
 			X1 = Double.parseDouble(posplit[0]);
 			Y1 = Double.parseDouble(posplit[1]);
+		} catch (NumberFormatException nfe4) {
+			log.error("Format error, this map file does not have a starting X,Y line.", nfe4);
+			throw new InstantiationException();
+		}
 
-			for (int j = 0; j < numLines - 1; j++) {
-				line = br.readLine();
+		for (int j = 0; j < numLines - 1; j++) {
+			try {
+				line = getLineSafe(br, "Failed to read a Path X,Y line.");
 				posplit = line.split(",");
 				X2 = Double.parseDouble(posplit[0]);
 				Y2 = Double.parseDouble(posplit[1]);
-				pathLines[j] = new SimpleLine(X1,Y1,X2,Y2);
-
-				X1 = X2;
-				Y1 = Y2;
+			} catch (NumberFormatException nfe5) {
+				log.error("Format error, this map file has an invalid X,Y line.", nfe5);
+				throw new InstantiationException();
 			}
 
-			pathNearThreshold = Double.parseDouble(br.readLine());
-			pathFarThreshold = Double.parseDouble(br.readLine());
+			pathLines[j] = new SimpleLine(X1,Y1,X2,Y2);
 
+			X1 = X2;
+			Y1 = Y2;
+		}
+
+		try {
+			pathNearThreshold = Double.parseDouble(getLineSafe(br, "Failed to read path nearness threshold."));
+			pathFarThreshold = Double.parseDouble(getLineSafe(br, "Failed to read path far threshold."));
+		} catch (NumberFormatException nfe6) {
+			log.error("Format error on path near/far thresholds.", nfe6);
+			throw new InstantiationException();
+		}
+
+		try {
 			br.close();
-		} catch(Exception e) {
-			log.error("Error reading map " + mapFile, e);
+		} catch(IOException e) {
+			log.error("Error closing map file.", e);
+		}
+	}
+
+	/**
+	 * Simple function that finalizes the initialization of a SimulationMap.
+	 *   Fills the walls and paths of the map.
+	 *
+	 * @param	wallLines	The {@link SimpleLine} array of lines in the wall.
+	 * @param	pathLines	The {@link SimpleLine} array of path guide lines.
+	 */
+	private void initialize(SimpleLine[] wallLines, SimpleLine[] pathLines) {
+		this.wallLines = wallLines;
+		this.pathLines = pathLines;
+	}
+
+	/* UTILITY METHODS */
+
+	/**
+	 * Found myself wrapping too many single line reads; simple helper method that safely
+	 *   reads a file line, and throws an InstantiationException if it fails. This method
+	 *   is only used by the initialize() breed of internal methods.
+	 *
+	 * @param	br				The Reader to pull a line from.
+	 * @param	failureMessage	The message text to output to logger on failure.
+	 * @throws	{@link InstantiationException}	Indicates something horrible has happened while
+	 * 			  creating an instance of this class.
+	 * @return	A string drawn from the BufferedReader.
+	 */
+	private String getLineSafe(BufferedReader br, String failureMessage) throws InstantiationException{
+		try {
+			return br.readLine();
+		} catch (IOException ioe1) {
+			log.error(failureMessage, ioe1);
+			throw new InstantiationException();
 		}
 	}
 
@@ -384,27 +477,18 @@ public class SimulationMap {
 	}
 
 	/**
-	 * Tests if this proposed movement vector passes through a wall.
-	 * TODO: This duplicates in inverse {@link intersectsWall}
+	 * Tests if this proposed movement vector does not pass through a wall.
 	 *
 	 * @param	SimpleLine	The vector to test against all walls.
 	 * @return				True if vector doesn't intersect any walls, false if it does.
+	 * @see	{@link intersectsWall()}
 	 */
 	public boolean canMove(SimpleLine vector) {
-		for (int j = 0; j < wallLines.length; j++) {
-			if ( Line2D.linesIntersect( vector.x1(), vector.y1(), vector.x2(), vector.y2(), wallLines[j].x1(), wallLines[j].y1(), wallLines[j].x2(), wallLines[j].y2() ) ) {
-				return false;
-			}
-		}
-
-		return true;
+		return !intersectsWall(vector.x1(), vector.y1(), vector.x2(), vector.y2());
 	}
-
 
 	/**
 	 * Returns a "shortened" vector based on wall location, useful to foreshorten vectors that would otherwise pass through walls.
-	 *
-	 * TODO: some error conditions are ignored. This should throw exceptions where appropriate.
 	 *
 	 * @param	vector	The vector to shorten
 	 * @return			The shortened vector (a new SimpleLine)
@@ -461,8 +545,9 @@ public class SimulationMap {
 
 		// At the end of this loop, we have the shortest adjustment that satisfies all bounds.
 
-		if (near < 0.0)
+		if (near < 0.0) {
 			near = 0.0;
+		}
 
 		x5 = x1 + near*(x2 - x1);
 		y5 = y1 + near*(y2 - y1);
@@ -486,9 +571,7 @@ public class SimulationMap {
 	}
 
 	/**
-	 * Returns how close to the path this point is (closest straightline distance).
-	 *
-	 * TODO: Evaluate efficiency and adjust
+	 * Returns how close to closest path point this point is (closest straightline distance).
 	 *
 	 * @param	x1	The point in X coords to compare against
 	 * @param	y1	The point in Y coords to compare against
@@ -578,10 +661,6 @@ public class SimulationMap {
 	/**
 	 * A utility method used to draw maps as string (for debugging).
 	 *
-	 * @param	minx	Map's min X coord
-	 * @param	maxx	Map's max X coord
-	 * @param	miny	Map's min Y coord
-	 * @param	maxy	Map's max Y coord
 	 * @param	x		"Player" X coord location
 	 * @param   y		"Player" Y coord location
 	 * @param	vx		"Player" X velocity
@@ -590,24 +669,13 @@ public class SimulationMap {
 	 *
 	 * @return			A string representation of the map
 	 */
-	public String drawMap(double minx, double maxx, double miny, double maxy, double x, double y, double vx, double vy, double unit) {
+	public String drawMap(double x, double y, double vx, double vy, double unit) {
 		StringBuffer mapout = new StringBuffer();
 
-		// TODO: Why does this duplicate mapExtent? Instead of accepting extents, just calculate using mapExtent()
-		// doublecheck that range fits extent.
-		for (SimpleLine wall : wallLines) {
-			if (wall.x1() < minx) minx = wall.x1();
-			if (wall.x2() < minx) minx = wall.x2();
-			if (wall.x1() > maxx) maxx = wall.x1();
-			if (wall.x2() > maxx) maxx = wall.x2();
-			if (wall.y1() < miny) miny = wall.y1();
-			if (wall.y2() < miny) miny = wall.y2();
-			if (wall.y1() > maxy) maxy = wall.y1();
-			if (wall.y2() > maxy) maxy = wall.y2();
-		}
+		double[] exts = this.mapExtent();
 
-		for (double j = maxy; j >= miny; j -= unit) {
-			for (double i = minx; i <= maxx; i += unit) {
+		for (double j = exts[3]; j >= exts[2]; j -= unit) {
+			for (double i = exts[0]; i <= exts[1]; i += unit) {
 				// draw player
 				if ( Math.sqrt( Math.pow(i - x, 2.0) + Math.pow(j - y, 2.0) ) <= unit / 1.414214) { // within sqrt(2) unit distance
 					mapout.append("P");
@@ -646,6 +714,8 @@ public class SimulationMap {
 
 		return mapout.toString();
 	}
+
+	/* STATIC UTILITY METHODS */
 
 	/**
 	 * This function is used to compute the "fitness" of motion along the map optimal path,
