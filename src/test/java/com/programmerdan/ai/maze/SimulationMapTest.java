@@ -10,7 +10,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.programmerdan.ai.maze.SimulationMap;
 
-
+/**
+ * Simple SimulationMap testing class.
+ * TODO: Make more complex, test all the specific map functions verifiably.
+ *
+ * @author Daniel Boston <programmerdan@gmail.com>
+ *
+ * @version 1.00
+ *   Initial refactor from SimulationMap class.
+ * @version 1.01 December 14, 2013
+ *   Some refinements, made compilable.
+ */
 @RunWith(JUnit4.class)
 public class SimulationMapTest {
 
@@ -26,7 +36,7 @@ public class SimulationMapTest {
 	 * TODO: Add validation.
 	 */
 	@Test
-	public void SimpleMapTest() {
+	public void simpleMapTest() {
 		SimpleLine[] walls = new SimpleLine[6];
 
 		walls[0] = new SimpleLine(-20.0, -10.0, -20.0,  10.0 );
@@ -51,7 +61,7 @@ public class SimulationMapTest {
 	 *   functions fire correctly.
 	 */
 	@Test
-	public void LoadMapTest() {
+	public void loadMapTest() {
 		String[] args = { "test", "10", "1000" };
 
 		// TODO: add pre-step that builds and saves a map to disk for this to load.
