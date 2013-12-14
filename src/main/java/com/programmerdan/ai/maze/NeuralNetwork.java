@@ -22,33 +22,93 @@ import java.io.*;
  *
  *
  * @author Daniel Boston <programmerdan@gmail.com>
+ *
  * @version 1.0 May 7, 2007
+ *   Initial version.
+ * @version 1.01 December 14, 2013
+ *   Revised version, improved comments and the like.
+ *
  * @see {@link Neuron}
  */
 public class NeuralNetwork
 {
+	/**
+	 * The input layer of Neurons.
+	 */
 	private Neuron[] inputLayer;
 
-	private NetworkInput[] inputHandlers; // handles are straightline input vs. weight appliers -- linear passthroughs that
-											// are exposed to the outside world.
+	/**
+	 * Each input Neuron is connected to a pass-through Neuron of type NetworkInput, which allows external values to
+	 * pass into the network without violating the Neuron construction expectations.
+	 * It also allows a particular input to map to several (or all) input layer Neurons with distinct weights.
+	 */
+	private NetworkInput[] inputHandlers;
+
+	/**
+	 * A "classic" NeuralNetwork like this class exemplifies has zero or more interal hidden layers of Neurons. They are
+	 * "stored" here.
+	 */
 	private Neuron[][] hiddenLayers;
+
+	/**
+	 * The output layer of Neurons. The "end of the line" for the Network.
+	 */
 	private Neuron[] outputLayer;
 
+	/**
+	 * Configuration of network -- number of inputs.
+	 */
 	private int nInputs;
+
+	/**
+	 * Configuration of network -- number of hidden layers.
+	 */
 	private int nHidden;
+
+	/**
+	 * Configuration of network -- size of each hidden layer.
+	 */
 	private int sizeHidden;
+
+	/**
+	 * Configuration of network -- indicator if hidden layers exist.
+	 */
 	private boolean hasHidden;
+
+	/**
+	 * Configuration of network -- number of outputs.
+	 */
 	private int nOutputs;
 
+	/**
+	 * Network setup -- current input Neuron to set.
+	 */
 	private int cInput;
+	/**
+	 * Network setup -- current layer of hidden Neurons.
+	 */
 	private int cLayer;
+	/**
+	 * Network setup -- current Neuron in hidden layer.
+	 */
 	private int cHidden;
+	/**
+	 * Network setup -- current output Neuron to set.
+	 */
 	private int cOutput;
 
-	// learning/forgetting factors (global)
-	private double alpha; // learning
-	private double phi;   // forgetting
+	/**
+	 * Configuration of network -- Learning factor (global)
+	 */
+	private double alpha;
+	/**
+	 * Configuration of network -- Forgetting factor (global)
+	 */
+	private double phi;
 
+	/**
+	 * Network setup -- number of discrete components to the network, configured on creation.
+	 */
 	private int factorSize;
 
 	/**
