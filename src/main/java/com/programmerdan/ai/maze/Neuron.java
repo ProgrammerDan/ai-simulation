@@ -1,6 +1,8 @@
 package com.programmerdan.ai.maze;
 
 import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This Neuron class is a bit messy still, but is the result of lots of careful thought involving the construction
@@ -13,63 +15,77 @@ import java.io.*;
  *
  * @author Daniel Boston <programmerdan@gmail.com>
  * @version 1.0 May 7, 2007
+ *   Original release
+ * @version 1.01 December 14, 2013
+ *   Refining comments, restructing file, and cleaning up.
  *
  * @see {@link NeuralNetwork} for how these Neurons link together
  * @see {@link ActivationFunction} for a listing of activation functions usable by these Neurons.
  */
 public class Neuron
 {
-	private Neuron[] inList;
-	private double[]  inListWeight;
+	private final Logger log = LoggerFactory.getLogger(Neuron.class);
+
 	/**
-	 * Introspection function, allows a monitor to see what the current input weights of this Neuron are.
-	 *
-	 * @return	the array of doubles representing the current weights applied to each input.
+	 * List of references to input Neurons. Basically, each Neuron has a collection of Neurons that feed into
+	 * it, and collectively form the activation input.
 	 */
-	public double[] getInWeights() {
-		return inListWeight;
-	}
+	private Neuron[] inList;
+	/**
+	 * Each input Neuron has an associated weight, determining how strongly the output of the Neuron impacts
+	 * the activation function of this Neuron.
+	 */
+	private double[] inListWeight;
+
+	/**
+	 * This Neuron may be connected to many other Neurons. Note that with this construction of
+	 * having references both forwards and backwards, a well connected set of Neurons functions like
+	 * a doubly-linked list, and all associated traversal properties and reconstruction properties apply.
+	 */
 	private Neuron[] outList;
 
+	/**
+	 * This is the maximum allowed number of inputs.
+	 */
 	private int inputs;
+
+	/**
+	 * This is the maximum allowed number of outputs.
+	 */
 	private int outputs;
 
-	private double[] inputValue;
-	private double outputValue;
 	/**
-	 * Introspective function, allows a monitor to see what the current output value is.
-	 *
-	 * @return	the double value representing this neuron's current output strength.
+	 * The set input values of this Neuron as of the last update.
 	 */
-	public double getOutputValue() {
-		return outputValue;
-	};
+	private double[] inputValue;
+	/**
+	 * The computed output of this Neuron (post-activation) as of last update.
+	 */
+	private double outputValue;
 
+	/**
+	 * This is the current number of connected input Neurons.
+	 */
 	private int inCount;
+	/**
+	 * This is the current number of connected output Neurons.
+	 */
 	private int outCount;
 
-	/** Learning rate */
+	/**
+	 * Learning rate -- controls how strongly activation reinforces the input weight of a Neuron.
+	 */
 	private double alpha;
-	/** Forgetting factor */
+	/**
+	 * Forgetting factor -- controls how quickly input weights decay, relative to strenght of activation.
+	 */
 	private double phi;
 
-	/** Activation Threshold/Level */
-	private double theta;
 	/**
-	 * Introspective function, allows a monitor to see what the current activation threshold is.
-	 *
-	 * @return	the double value representing this neuron's current activation threshold.
+	 * Activation Threshold/Level -- controls what is considered activation. Depending on the activation
+	 * function, might not strictly determine activation, but will always be part of the computation.
 	 */
-	public double getTheta() {
-		return theta;
-	}
-
-	/** Old-style debug mode flag */
-	private boolean debug;
-	/** Old-style debug mode output target */
-	private PrintWriter debugOut;
-
-	// TODO: add Logger
+	private double theta;
 
 	/**
 	 * The Neuron's activation function.
@@ -88,110 +104,125 @@ public class Neuron
 	 *   important characteristics such as learning factor, forgetting factor, and activation threshold, along with
 	 *   the {@link ActivationFunction} that will determine output weight based on inputs.
 	 *
-	 * @param	_inputs		the number of inputs this Neuron will accept.
-	 * @param	_outputs	the number of outputs this Neuron will accept.
-	 * @param	_alpha		the learning factor
-	 * @param	_phi		the forgetting factor
-	 * @param	_theta		the activation threshold
-	 * @param	_act		the {@link ActivationFunction}
-	 *
-	 * TODO: remove C style params, evaluate if statically sized inputs/outputs makes sense still.
+	 * @param	inputs		the number of inputs this Neuron will accept.
+	 * @param	outputs	the number of outputs this Neuron will accept.
+	 * @param	alpha		the learning factor
+	 * @param	phi		the forgetting factor
+	 * @param	theta		the activation threshold
+	 * @param	act		the {@link ActivationFunction}
 	 */
-	public Neuron(int _inputs, int _outputs, double _alpha, double _phi, double _theta, ActivationFunction _act)
+	public Neuron(int inputs, int outputs, double alpha, double phi, double theta, ActivationFunction act)
 	{
-		inputs = _inputs;
-		outputs = _outputs;
+		this.inputs = inputs;
+		this.outputs = outputs;
 
-		if (inputs > 0)
+		if (this.inputs > 0)
 		{
-			inList = new Neuron[inputs];
-			inListWeight = new double[inputs];
-			inputValue = new double[inputs];
+			this.inList = new Neuron[this.inputs];
+			this.inListWeight = new double[this.inputs];
+			this.inputValue = new double[this.inputs];
 		}
 
-		if (outputs > 0)
-			outList = new Neuron[outputs];
+		if (this.outputs > 0)
+			this.outList = new Neuron[this.outputs];
 
-		outputValue = 0.0;
+		this.outputValue = 0.0;
 
-		inCount = 0;
-		outCount = 0;
+		this.inCount = 0;
+		this.outCount = 0;
 
-		alpha = _alpha;
-		phi = _phi;
-		theta = _theta;
+		this.alpha = alpha;
+		this.phi = phi;
+		this.theta = theta;
 
-		activator = _act;
+		this.activator = act;
+
+		log.debug("Neuron created with {} inputs, {} outputs, learning {}, forgetting {}, and activation threshold {}",
+				new Object[] {this.inputs, this.outputs, this.alpha, this.phi, this.theta} );
 	}
 
 	/**
-	 * Duplicate? Returns the current output value.
+	 * Introspection function, allows a monitor to see what the current input weights of this Neuron are.
 	 *
-	 * @return	the output value.
+	 * @return	the array of doubles representing the current weights applied to each input.
+	 */
+	public double[] getInWeights() {
+		return inListWeight;
+	}
+
+	/**
+	 * Introspective function, allows a monitor to see what the current activation threshold is.
+	 *
+	 * @return	the double value representing this neuron's current activation threshold.
+	 */
+	public double getTheta() {
+		return theta;
+	}
+
+	/**
+	 * Returns the current output value.
+	 *
+	 * @return the double value representing this neuron's current output strength.
 	 */
 	public double getOutput()
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].getOutput() = " + String.valueOf(outputValue));
 		return outputValue;
 	}
 
 	/**
-	 * Sets the output value of this neuron. Questionable to call from outside.
+	 * Sets the output value of this neuron. Used by subclasses.
 	 *
-	 * @param	_output	the new output value. Violates activation function contract.
+	 * @param	output	the new output value.
 	 */
-	void setOutput(double _output)
+	protected void setOutput(double output)
 	{
-		outputValue = _output;
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].setOutput(" + String.valueOf(_output) + ")");
+		outputValue = output;
+		log.debug("Neuron {} update output to {}", this.hashCode(), outputValue);
 	}
 
 	/**
-	 * Add an input to this neuron. You can add inputs up until the maximum inputs you specified in constructing the neuron.
+	 * Add an input to this Neuron. You can add inputs up until the maximum inputs you specified in constructing the neuron.
 	 *  Each input must have a weight.
 	 *
-	 * @param	_in		the Neuron to add as an input
-	 * @param	_weight	the weight of this input
+	 * @param	in		the Neuron to add as an input
+	 * @param	weight	the weight of this input
 	 * @return			True if the Neuron was added, False if the input set is full.
 	 */
-	public boolean addInput(Neuron _in, double _weight)
+	public boolean addInput(Neuron in, double weight)
 	{
-		if (debug) debugOut.print("[" + String.valueOf(this.hashCode()) + "].addInput([" + String.valueOf(_in.hashCode()) + "]," + String.valueOf(_weight) + ") = ");
-
 		if (inCount < inputs)
 		{
-			inList[inCount] = _in;
-			inListWeight[inCount] = _weight;
+			inList[inCount] = in;
+			inListWeight[inCount] = weight;
 			inCount++;
-			if (debug) debugOut.println("success");
+			log.debug("Neuron {} linked Neuron {} as input with weight {}", new Object[] {this.hashCode(), in.hashCode(), weight} );
 			return true;
 		}
 		else
 		{
-			if (debug) debugOut.println("failure");
+			log.warn("Neuron {} FAILED to link Neuron {} as input with weight {}", new Object[] {this.hashCode(), in.hashCode(), weight} );
 			return false;
 		}
 	}
 
 	/**
-	 * Adds an output to the Neuron. Again, can add only until the maximum number of outputs you specified in constructing the neuron.
+	 * Adds an output to this Neuron. You can add Neurons only until the maximum number of outputs you specified in constructing the neuron.
 	 *
-	 * @param	_out	the Neuron to add as an output
+	 * @param	out	the Neuron to add as an output
 	 * @return			True if the Neuron was added, False if the output set is full.
 	 */
-	public boolean addOutput(Neuron _out)
+	public boolean addOutput(Neuron out)
 	{
-		if (debug) debugOut.print("[" + String.valueOf(this.hashCode()) + "].addOutput([" + String.valueOf(_out.hashCode()) + "]) = ");
 		if (outCount < outputs)
 		{
-			outList[outCount] = _out;
+			outList[outCount] = out;
 			outCount++;
-			if (debug) debugOut.println("success");
+			log.debug("Neuron {} linked Neuron {} as output", this.hashCode(), out.hashCode());
 			return true;
 		}
 		else
 		{
-			if (debug) debugOut.println("failure");
+			log.debug("Neuron {} FAILED to link Neuron {} as output", this.hashCode(), out.hashCode());
 			return false;
 		}
 	}
@@ -206,11 +237,9 @@ public class Neuron
 	 */
 	public void step()
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].step()");
+		log.debug("Neuron {} step function called", this.hashCode() );
 
-		outputValue = activator.activate(inputValue, inList, inListWeight, theta);
-
-		if (debug) debugOut.println("  outputValue: " + String.valueOf(outputValue));
+		setOutput( activator.activate(inputValue, inList, inListWeight, theta) );
 
 		learn();
 	}
@@ -224,14 +253,12 @@ public class Neuron
 	 */
 	private void learn()
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].learn()");
+		log.debug("Neuron {} learning function called", this.hashCode() );
 
 		double nextWeight = 0.0;
 
 		for (int wC = 0; wC < inCount; wC++)
 		{
-			if (debug) debugOut.print("  " + String.valueOf(wC) + " - weight: " + String.valueOf(inListWeight[wC]));
-
 			nextWeight = 0.0;
 			if (inList[wC] != null)
 			{
@@ -239,7 +266,7 @@ public class Neuron
 				nextWeight -= phi * outputValue * inListWeight[wC]; // phi * yj * wij (forgetting)
 			}
 
-			if (debug) debugOut.print(" - delta: " + String.valueOf(nextWeight));
+			log.debug("Neuron {} weight delta is {}", this.hashCode(), nextWeight);
 
 			// Accumulation is mexican hatted, to a degree.
 			// if accumulation is the same sign as weight, slow it down as it nears maximum.
@@ -251,31 +278,10 @@ public class Neuron
 			inListWeight[wC] += nextWeight; // accumulate.
 
 			if (Math.abs(inListWeight[wC]) > MAXWEIGHT)
-				System.out.println("Weight out of line -- nextWeight: " + nextWeight);
-
-			if (debug) debugOut.println(" - final: " + String.valueOf(inListWeight[wC]));
+				log.warn("Neuron {} input weight for input {} is too high at {}", new Object[] { this.hashCode(), wC, inListWeight[wC] } );
+			else
+				log.debug("Neuron {} input weight for input {} is adjusted to {}", new Object[] { this.hashCode(), wC, inListWeight[wC] } );
 		}
-	}
-
-	/**
-	 * Turn on the debug output for this neuron.
-	 *
-	 * @param	_debout	The output {@link PrintWriter} for debug statements.
-	 * TODO: replace with logger and logging level throughout.
-	 */
-	public void activateDebug(PrintWriter _debout)
-	{
-		debugOut = _debout;
-		debug = true;
-	}
-
-	/**
-	 * Turn off debugging for this neuron.
-	 */
-	public void deactivateDebug()
-	{
-		debugOut = null;
-		debug = false;
 	}
 
 	/**
@@ -285,7 +291,9 @@ public class Neuron
 	 */
 	public String toString()
 	{
-		StringBuffer ret = new StringBuffer("<");
+		StringBuffer ret = new StringBuffer("[");
+		ret.append(this.hashCode());
+		ret.append("]<");
 
 		for (int sC = 0; sC < inCount; sC++)
 		{
@@ -319,17 +327,17 @@ class NetworkInput extends Neuron
 	{
 		super(0,1,0,0, 0.0, AF_Linear.Default);
 
-		setOutput(0.0);
+		super.setOutput(0.0);
 	}
 
 	/**
 	 * Sets the output value of this Neuron, or, sets the "input" of this passthrough.
 	 *
-	 * @param	_output	The new "input" value.
+	 * @param	output	The new "input" value.
 	 */
-	public void setValue(double _output)
+	public void setValue(double output)
 	{
-		setOutput(_output);
+		super.setOutput(output);
 	}
 
 }

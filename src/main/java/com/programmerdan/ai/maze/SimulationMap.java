@@ -727,7 +727,7 @@ public class SimulationMap {
 	 * @param	simLengthCap	Simulation length cap
 	 * @return					Double value of the current fitness
 	 */
-	private static double computeStepFitness(double progressFitness, double simLengthCap) {
+	public static double computeStepFitness(double progressFitness, double simLengthCap) {
 		double b = 10.0 / simLengthCap;
 
 		double x = progressFitness * simLengthCap;

@@ -1,12 +1,15 @@
 package com.programmerdan.ai.maze;
 
-import static org.junit.Assert.assertEquals();
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.programmerdan.ai.maze.SimulationMap;
+
 
 @RunWith(JUnit4.class)
 public class SimulationMapTest {
@@ -49,6 +52,8 @@ public class SimulationMapTest {
 	 */
 	@Test
 	public void LoadMapTest() {
+		String[] args = { "test", "10", "1000" };
+
 		// TODO: add pre-step that builds and saves a map to disk for this to load.
 		SimulationMap map = new SimulationMap("./mazes/" + args[0] + ".maze");
 
@@ -137,7 +142,7 @@ public class SimulationMapTest {
 
 					double[] nearPoints = map.nearestWalls(rays);
 					double[] normPoints = SimulationMap.normalizeSight(nearPoints, raylength, 1.0, 0.0);
-					int[] wallIdx = map.lastWallIdx();
+					int[] wallIdx = map.getLastWallIdx();
 
 					//System.out.println("opt: < " + (Math.round(vr * 1000.0) / 1000.0) + ", " + (Math.round( (vt * (180.0 / Math.PI) ) * 100.0) / 100.0) + " > near: < ");
 
@@ -200,7 +205,7 @@ public class SimulationMapTest {
 				//System.out.print(" Fit: " + fitness);
 
 				if (step >= maxsteps && pathProg < 1.0)// step >= maxsteps && pathProg < 1.0)
-					fitness *= computeStepFitness(maxPathProg, maxsteps ); // decay fitness! We didn't make it ... how close did we get, though?
+					fitness *= SimulationMap.computeStepFitness(maxPathProg, maxsteps ); // decay fitness! We didn't make it ... how close did we get, though?
 
 				if (fitness > maxFit) maxFit = fitness;
 				if (fitness < minFit) minFit = fitness;
