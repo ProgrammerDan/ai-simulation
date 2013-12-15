@@ -487,33 +487,31 @@ public class NeuralNetwork
 
 						if (connect.addOutput(outputLayer[idx]))
 						{
-							if (debug) debugOut.println("  Connect bound to Output Layer " + String.valueOf(idx));
+							log.debug("NeuralNetwork {} connect bound to output {}", this.hashCode(), idx);
 						}
 						else
 						{
-							if (debug) debugOut.println("  Connect unbound! \n= failure");
+							log.error("NeuralNetwork {} connect bind to output {} failed!");
 							return false;
 						}
 
-						if (outputLayer[idx].addInput(connect, _weights[wC]))
+						if (outputLayer[idx].addInput(connect, weights[wC]))
 						{
-							if (debug) debugOut.println("  Output Layer " + String.valueOf(idx) + " Bound to Connect with weight " + String.valueOf(_weights[wC]));
+							log.debug("NeuralNetwork {} output {} bound to connect with weight {}", this.hashCode(), idx, weight[wC]);
 						}
 						else
 						{
-							if (debug) debugOut.println("  Output Layer " + String.valueOf(idx) + " unbound! \n= failure");
+							log.error("NeuralNetwork {} output {} bind to connect failed!");
 							return false;
 						}
 					} // loop through entire previous layer.
-
-					if (debug) debugOut.println("= success");
 
 					cOutput ++; // next call to setOutput, work on next output.
 					if (cOutput >= nOutputs)
 					{
 						cLayer ++; // done this layer, done the network!
 					}
-					factorSize += _weights.length + 1; // num weights + threshold.
+					factorSize += weights.length + 1; // num weights + threshold.
 
 					return true;
 				}
@@ -529,19 +527,18 @@ public class NeuralNetwork
 	 */
 	public void setInputs(double[] inValues)
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].setInputs(" + String.valueOf(inValues.length) + ")");
+		log.debug( "NeuralNetwork {} setting {} inputs", this.hashCode(), inValues.length );
 		if (inValues.length == nInputs)
 		{
 			for (int cI = 0; cI < nInputs; cI ++)
 			{
 				inputHandlers[cI].setValue(inValues[cI]);
-				if (debug) debugOut.println("  input Handler " + String.valueOf(cI) + " value set to " + String.valueOf(inputHandlers[cI].getOutput()));
+				log.debug("NeuralNetwork {} input {} set to {}", this.hashCode(), cI, inputHandlers[cI].getOutput() );
 			}
-			if (debug) debugOut.println("= success");
 		}
 		else
 		{
-			if (debug) debugOut.println("  Too few inputs on call to setInputs. \n= failure");
+			log.error( "NeuralNetwork {} not the right amount of inputs!");
 		}
 	}
 
@@ -553,7 +550,7 @@ public class NeuralNetwork
 	 */
 	public double[] getOutputs()
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].getOutputs()");
+		log.debug("NeuralNetwork {} getting Outputs", this.hashCode() );
 		double[] outValues;
 
 		int oSize;
@@ -586,13 +583,13 @@ public class NeuralNetwork
 	 */
 	public void step()
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].step()");
+		log.debug("NeuralNetwork {} stepping started", this.hashCode() );
 		// steps the entire network, from left to right.
 
 		for (int iC = 0; iC < nInputs; iC ++)
 		{
 			inputLayer[iC].step();
-			if (debug) debugOut.println("  Input Layer " + String.valueOf(iC) + " Stepped");
+			log.debug("NeuralNetwork {} input layer {} stepped", this.hashCode(), iC);
 		}
 
 		if (hasHidden)
@@ -602,7 +599,7 @@ public class NeuralNetwork
 				for (int iS = 0; iS < sizeHidden; iS ++)
 				{
 					hiddenLayers[iH][iS].step();
-					if (debug) debugOut.println("  Hidden Layer <" + String.valueOf(iH) + "," + String.valueOf(iS) + "> Stepped");
+					log.debug("NeuralNetwork {} hidden layer ({},{}) stepped", this.hashCode(), iH, iS);
 				}
 			}
 		}
@@ -610,56 +607,10 @@ public class NeuralNetwork
 		for (int iO = 0; iO < nOutputs; iO ++)
 		{
 			outputLayer[iO].step();
-			if (debug) debugOut.println("  Output Layer " + String.valueOf(iO) + " Stepped");
-		}
-
-		if (debug) debugOut.println("= success");
-		// done.
-	}
-
-	/**
-	 * Turn on the debug for the Network.
-	 * TODO: Modernize.
-	 *
-	 * @param	_debout		The PrintWriter to send debug messages to.
-	 */
-	public void activateDebug(PrintWriter _debout)
-	{
-		debugOut = _debout;
-		debug = true;
-	}
-
-	/**
-	 * Turn on debug for all Neurons in the Network.
-	 * Must be called strictly AFTER {@link activateDebug(PrintWriter)} or will cause quite a few
-	 *   {@link NullPointerException}s.
-	 */
-	public void activateChildDebug()
-	{
-		if (debug)
-		{
-			for (int iC = 0; iC < nInputs; iC ++)
-			{
-				inputLayer[iC].activateDebug(debugOut);
-			}
-
-			if (hasHidden)
-			{
-				for (int iH = 0; iH < nHidden; iH ++)
-				{
-					for (int iS = 0; iS < sizeHidden; iS ++)
-					{
-						hiddenLayers[iH][iS].activateDebug(debugOut);
-					}
-				}
-			}
-
-			for (int iO = 0; iO < nOutputs; iO ++)
-			{
-				outputLayer[iO].activateDebug(debugOut);
-			}
+			log.debug("NeuralNetwork {} output layer {} stepped", this.hashCode(), iO);
 		}
 	}
+
 
 	/**
 	 * Print the construction of the input, hidden, and output layers in a matrix type style, based on the
@@ -745,15 +696,4 @@ public class NeuralNetwork
 
 		return matrix.toString();
 	}
-
-	/**
-	 * Turn OFF the debug.
-	 */
-	public void deactivateDebug()
-	{
-		debugOut = null;
-		debug = false;
-	}
-
-
 }
