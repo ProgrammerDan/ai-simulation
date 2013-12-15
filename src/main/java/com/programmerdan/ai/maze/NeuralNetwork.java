@@ -1,6 +1,8 @@
 package com.programmerdan.ai.maze;
 
 import java.io.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a Neural Network builder/holder class.
@@ -32,6 +34,11 @@ import java.io.*;
  */
 public class NeuralNetwork
 {
+	/**
+	 * Logger for this class.
+	 */
+	private final Logger log = LoggerFactory.getLogger(NeuralNetwork.class);
+
 	/**
 	 * The input layer of Neurons.
 	 */
@@ -163,65 +170,62 @@ public class NeuralNetwork
 		return nf;
 	}
 
-	//TODO: Let's modernize this debug.
-	private boolean debug; // debugging this network?
-	private PrintWriter debugOut;
-
 	/**
 	 * Initialize a new neural network.
 	 * Specifies the network characteristics, including number of input neurons, number of hidden neurons in each layer
 	 *   and how many hidden layers, how many output neurons, and finally the learning and forgetting factors of the
 	 *   network.
 	 *
-	 * TODO: Get rid of C style params.
-	 *
-	 * @param	_nInputs	Number of input neurons in the input layer. (if negative, absolute value used)
-	 * @param	_nHidden	Number of hidden neurons in each hidden layer. (if negative, absolute value used)
-	 * @param	_sizeHidden	Number of hidden layers. (if negative, absolute value used)
-	 * @param	_nOutputs	Number of output neurons in the output layer. (if negative, absolute value used)
-	 * @param	_alpha		The learning factor.
-	 * @param	_phi		The forgetting factor.
+	 * @param	nInputs	Number of input neurons in the input layer. (if negative, absolute value used)
+	 * @param	nHidden	Number of hidden neurons in each hidden layer. (if negative, absolute value used)
+	 * @param	sizeHidden	Number of hidden layers. (if negative, absolute value used)
+	 * @param	nOutputs	Number of output neurons in the output layer. (if negative, absolute value used)
+	 * @param	alpha		The learning factor.
+	 * @param	phi		The forgetting factor.
 	 */
-	public NeuralNetwork(int _nInputs, int _nHidden, int _sizeHidden, int _nOutputs, double _alpha, double _phi)
+	public NeuralNetwork(int nInputs, int nHidden, int sizeHidden, int nOutputs, double alpha, double phi)
 	{
+		log.debug("Initializing a Neural Network with {} inputs, {} hidden layers of {} Neurons each, and {} outputs." +
+				" Learning factor {} and forgetting factor {}.", new Object[] {nInputs, nHidden, sizeHidden, nOutputs,
+				alpha, phi} );
 		factorSize = 2; // alpha and phi.
 
-		nInputs = (_nInputs < 0) ? -_nInputs: _nInputs;
-		nHidden = (_nHidden < 0) ? -_nHidden: _nHidden;
-		sizeHidden = (_sizeHidden < 0) ? -_sizeHidden: _sizeHidden;
-		nOutputs = (_nOutputs < 0) ? -_nOutputs: _nOutputs;
+		this.nInputs = (nInputs < 0) ? -nInputs: nInputs;
+		this.nHidden = (nHidden < 0) ? -nHidden: nHidden;
+		this.sizeHidden = (sizeHidden < 0) ? -sizeHidden: sizeHidden;
+		this.nOutputs = (nOutputs < 0) ? -nOutputs: nOutputs;
 
-		if (nInputs > 0)
+		if (this.nInputs > 0)
 		{
-			inputLayer = new Neuron[nInputs];
-			inputHandlers = new NetworkInput[nInputs];
+			inputLayer = new Neuron[this.nInputs];
+			inputHandlers = new NetworkInput[this.nInputs];
 		}
 
-		if ((nHidden > 0) && (sizeHidden > 0))
+		if ((this.nHidden > 0) && (this.sizeHidden > 0))
 		{
 			hasHidden = true;
-			hiddenLayers = new Neuron[nHidden][sizeHidden];
+			hiddenLayers = new Neuron[this.nHidden][this.sizeHidden];
 		}
 		else
 		{
 			hasHidden = false;
 		}
 
-		if (nOutputs > 0)
+		if (this.nOutputs > 0)
 		{
-			outputLayer = new Neuron[nOutputs];
+			outputLayer = new Neuron[this.nOutputs];
 		}
 		else if(hasHidden)
 		{
-			outputLayer = new Neuron[sizeHidden];
+			outputLayer = new Neuron[this.sizeHidden];
 		}
 		else // no hidden, and no discrete outputs
 		{
-			outputLayer = new Neuron[nInputs];
+			outputLayer = new Neuron[this.nInputs];
 		}
 
-		alpha = _alpha;
-		phi = _phi;
+		this.alpha = alpha;
+		this.phi = phi;
 
 		cInput = 0;
 		cLayer = -1;
@@ -232,59 +236,60 @@ public class NeuralNetwork
 	/**
 	 * Adds an input to the input layer by creating a new Neuron and wiring it up to the rest of the network.
 	 *
-	 * @param	_weight		weight between Input Handler and Input Layer (how sensitive am I to input?)
-	 * @param	_theta		activation weight of Input Layer (what is my threshold for input?)
+	 * @param	weight		weight between Input Handler and Input Layer (how sensitive am I to input?)
+	 * @param	theta		activation weight of Input Layer (what is my threshold for input?)
 	 * @param	active		activation function of Input Layer (how do I fire?)
 	 * @return				True if input was successfully created and added, False otherwise.
 	 * @see {@link ActivationFunction}
 	 * @see {@link Neuron}
 	 */
-	public boolean addInput(double _weight, double _theta, ActivationFunction active)
+	public boolean addInput(double weight, double theta, ActivationFunction active)
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].addInput(" + String.valueOf(cInput) + "," + String.valueOf(_weight) + "," + String.valueOf(_theta) + ")");
+		log.debug("NeuralNetwork {} adding input Neuron with weight {}, activation {}, and function {}",
+				new Object{} {this.hashCode(), weight, theta, active.getClass().getName() } );
 
 		if (cLayer == -1) // defining input mode.
 		{
-			int _idx = cInput;
+			int idx = cInput;
 
-			if (inputLayer[_idx] == null) // TODO: If input layer is size 0, this will throw null pointer exception.
+			if (inputLayer[idx] == null) // TODO: If input layer is size 0, this will throw null pointer exception.
 			{
 				if (hasHidden) // is there at least some kind of hidden layer?
-					inputLayer[_idx] = new Neuron(1, sizeHidden, alpha, phi, _theta, active);
+					inputLayer[idx] = new Neuron(1, sizeHidden, alpha, phi, theta, active);
 				else
-					inputLayer[_idx] = new Neuron(1, nOutputs, alpha, phi, _theta, active); // no hidden layer, simple network.
+					inputLayer[idx] = new Neuron(1, nOutputs, alpha, phi, theta, active); // no hidden layer, simple network.
 
-				inputHandlers[_idx] = new NetworkInput();
+				inputHandlers[idx] = new NetworkInput();
 
 				if ((nOutputs == 0) && (!hasHidden)) // special case, simplest NN
 				{
-					outputLayer[_idx] = inputLayer[_idx];
-					debugOut.println("  Input Node " + String.valueOf(_idx) + " Bound to Output Layer (simple NN) ");
+					outputLayer[idx] = inputLayer[idx];
+					log.debug("NeuralNetwork {} input {} bound to output layer (simple NN)", this.hashCode(), idx);
 				}
 
-				if (inputHandlers[_idx].addOutput(inputLayer[_idx]))
+				if (inputHandlers[idx].addOutput(inputLayer[idx]))
 				{
-					if (debug) debugOut.println("  Handler " + String.valueOf(_idx) + " Bound to Input ");
+					log.debug("NeuralNetwork {} handler {} bound to input", this.hashCode(), idx);
 				}
 				else
 				{
-					if (debug) debugOut.println("  Handler " + String.valueOf(_idx) + " unbound! \n= failure");
+					log.error("NeuralNetwork {} handler {} unbound!", this.hashCode(), idx);
 					return false;
 				}
 
-				if (inputLayer[_idx].addInput(inputHandlers[_idx], _weight))
+				if (inputLayer[idx].addInput(inputHandlers[idx], weight))
 				{
-					if (debug) debugOut.println("  Input " + String.valueOf(_idx) + " Bound to Handler with weight " + String.valueOf(_weight));
+					log.debug("NeuralNetwork {} input {} bound to handler with weight {}", this.hashCode(), idx, weight);
 				}
 				else
 				{
-					if (debug) debugOut.println("  Input " + String.valueOf(_idx) + " unbound! \n= failure");
+					log.error("NeuralNetwork {} input {} unbound!", this.hashCode(), idx);
 					return false;
 				}
 			}
 			else
 			{
-				if (debug) debugOut.println("  Input " + String.valueOf(_idx) + " already bound! \n= failure");
+				log.error("NeuralNetwork {} input {} already bound?!", this.hashCode(), idx);
 				return false; // fatal error?
 			}
 
@@ -294,15 +299,13 @@ public class NeuralNetwork
 				cLayer = 0; // done inputs, move on to first hidden layer or output layer.
 			}
 
-			if (debug) debugOut.println("= success");
-
 			factorSize += 2; // weight, threshold.
 
 			return true;
 		}
 		else
 		{
-			if (debug) debugOut.println("  (wrong mode) \n= failure");
+			log.warn("NeuralNetwork {} is in wrong mode for more inputs.", this.hashCode() );
 			return false;
 		}
 	}
@@ -310,23 +313,24 @@ public class NeuralNetwork
 	/**
 	 * Add a hidden layer, with the specified application function.
 	 *
-	 * @param	_weights	For each new layer, this weight array must be equal in size to the size of the previous layer.
+	 * @param	weights	For each new layer, this weight array must be equal in size to the size of the previous layer.
 	 * 						  For example, if the input layer is 5 Neurons "wide", every neuron in the first hidden layer
 	 *						  should have 5 weights. If that hidden layer is 7 Neurons "wide", every neuron in the second
 	 *						  hidden layer (or output layer) must have 7 weights, and so on.
-	 * @param	_theta		The activation threshold for this Neuron.
+	 * @param	theta		The activation threshold for this Neuron.
 	 * @param	active		The activation function.
 	 * @return				True if hidden Neuron was successfully added, False otherwise.
 	 * @see {@link Neuron}
 	 * @see {@link ActivationFunction}
 	 */
-	public boolean addHidden(double[] _weights, double _theta, ActivationFunction active) // _weights.length MUST == previous layer size
+	public boolean addHidden(double[] weights, double theta, ActivationFunction active) // weights.length MUST == previous layer size
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].addHidden(" + String.valueOf(cLayer) + "," + String.valueOf(cHidden) + "," + String.valueOf(_weights.length) + "," + String.valueOf(_theta) + ")"); // output weight list size.
+		log.debug("NeuralNetwork {} adding hidden Neuron with {} weights, activation {}, and function {}",
+				new Object{} {this.hashCode(), weights.length, theta, active.getClass().getName() } );
 
 		if ((cLayer < 0) || (cLayer >= nHidden) || (!hasHidden)) // defining this layer's input mode.
 		{
-			if (debug) debugOut.println("  (wrong mode) \n= failure");
+			log.warn("NeuralNetwork {} is in wrong mode for adding hidden Neuron.", this.hashCode() );
 			return false;
 		}
 		else // good to go.
@@ -334,9 +338,10 @@ public class NeuralNetwork
 			int prevLayer = (cLayer == 0) ? nInputs : sizeHidden; // first hidden layer?
 			int nextLayer = (cLayer == nHidden - 1) ? nOutputs : sizeHidden; // last hidden layer?
 
-			if (_weights.length != prevLayer) // check
+			if (weights.length != prevLayer) // check
 			{
-				if (debug) debugOut.println("  (weight array size != previous layer size) \n= failure");
+				log.error("NeuralNetwork {} new hidden Neuron has wrong number of weights to map against prior layer!",
+						this.hashCode() );
 				return false;
 			}
 			else
@@ -346,17 +351,19 @@ public class NeuralNetwork
 
 				if (hiddenLayers[id1][id2] != null)
 				{
-					if (debug) debugOut.println("  (hidden node already bound!) \n= failure");
+					log.error("NeuralNetwork {} current hidden node ({},{}) already has bound Neuron!",
+							this.hashCode(), cLayer, cHidden);
 					return false;
 				}
 				else
 				{
-					hiddenLayers[id1][id2] = new Neuron(prevLayer, nextLayer, alpha, phi, _theta, active);
+					hiddenLayers[id1][id2] = new Neuron(prevLayer, nextLayer, alpha, phi, theta, active);
 
 					if ((cLayer == nHidden - 1) && (nOutputs == 0)) // special case, no discrete output layer.
 					{
 						outputLayer[id2] = hiddenLayers[id1][id2]; // pass directly to output.
-						debugOut.println("  Hidden Node <" + String.valueOf(id1) + "," + String.valueOf(id2) + "> Bound to Output Layer (exposed NN) ");
+						log.debug("NeuralNetwork {} hidden ({},{}) bound to output layer (exposed NN) ",
+								this.hashCode(), id1, id2);
 					}
 
 					Neuron connect;
@@ -365,37 +372,41 @@ public class NeuralNetwork
 					{
 						if (cLayer == 0) // previous layer was input layer.
 						{
-							if (debug) debugOut.println("  Connect is Input Layer " + String.valueOf(wC));
+							log.debug("NeuralNetwork {} hidden ({},{}) connect to input {}",
+									new Object[] { this.hashCode(), id1, id2, wC } );
 							connect = inputLayer[wC];
 						}
 						else // previous layer was hidden layer.
 						{
-							if (debug) debugOut.println("  Connect is Hidden Layer <" + String.valueOf(id1 - 1) + "," + String.valueOf(wC) + ">");
+							log.debug("NeuralNetwork {} hidden ({},{}) connect to hidden ({},{})",
+									new Object[] { this.hashCode(), id1, id2, id1-1, wC } );
 							connect = hiddenLayers[id1 - 1][wC];
 						}
 
 						if (connect.addOutput(hiddenLayers[id1][id2]))
 						{
-							if (debug) debugOut.println("  Connect bound to Hidden Layer <" + String.valueOf(id1) + "," + String.valueOf(id2) + ">");
+							log.debug("NeuralNetwork {} connect bound to hidden ({},{})",
+									this.hashCode(), id1, id2);
 						}
 						else
 						{
-							if (debug) debugOut.println("  Connect unbound! \n= failure");
+							log.error("NeuralNetwork {} counnt to hidden ({},{}) failed!",
+									this.hashCode(), id1, id2);
 							return false;
 						}
 
-						if (hiddenLayers[id1][id2].addInput(connect, _weights[wC]))
+						if (hiddenLayers[id1][id2].addInput(connect, weights[wC]))
 						{
-							if (debug) debugOut.println("  Hidden Layer <" + String.valueOf(id1) + "," + String.valueOf(id2) + "> Bound to Connect with weight " + String.valueOf(_weights[wC]));
+							this.debug("NeuralNetwork {} hidden ({},{}) bound to hidden ({},{}) with weight {}",
+									new Object[] {this.hashCode(), id1, id2, id1 - 1, wC, weights[wC]} );
 						}
 						else
 						{
-							if (debug) debugOut.println("  Hidden Layer <" + String.valueOf(id1) + "," + String.valueOf(id2) + "> unbound! \n= failure");
+							this.debug("NeuralNetwork {} hidden ({},{}) bind to hidden ({},{}) failed!",
+									new Object[] {this.hashCode(), id1, id2, id-1, wC} );
 							return false;
 						}
 					} // loop through entire previous layer.
-
-					if (debug) debugOut.println("= success");
 
 					cHidden ++; // next call to setHidden, work on next hidden.
 					if (cHidden >= sizeHidden)
@@ -404,7 +415,7 @@ public class NeuralNetwork
 						cHidden = 0;
 					}
 
-					factorSize += _weights.length + 1; // num weights + threshold.
+					factorSize += weights.length + 1; // num weights + threshold.
 
 					return true;
 				}
@@ -416,30 +427,32 @@ public class NeuralNetwork
 	 * Add output layer. Note that both hidden and output layers will only be filled if the previous layers are full.
 	 *   E.g. only start calling this function once all input neurons and hidden neuron layers are complete.
 	 *
-	 * @param	_weights	{@link addHidden()} for explanation, as the size of this array must be the same as the number
+	 * @param	weights	{@link addHidden()} for explanation, as the size of this array must be the same as the number
 	 *						  of Neurons in the final hidden layer.
-	 * @param	_theta		The activation threshold for this output.
+	 * @param	theta		The activation threshold for this output.
 	 * @param	active		The activation function for this output.
 	 * @return				True if output neuron was created and bound successfully, False otherwise.
 	 * @see {@link Neuron}
 	 * @see {@link ActivationFunction}
 	 */
-	public boolean addOutput(double[] _weights, double _theta, ActivationFunction active) // _weights.length MUST == previous layer size
+	public boolean addOutput(double[] weights, double theta, ActivationFunction active) // weights.length MUST == previous layer size
 	{
-		if (debug) debugOut.println("[" + String.valueOf(this.hashCode()) + "].addOutput(" + String.valueOf(cOutput) + "," + String.valueOf(_weights.length) + "," + String.valueOf(_theta) + ")"); // output weight list size.
+		log.debug("NeuralNetwork {} adding output Neuron with {} weights, activation {}, and function {}",
+				new Object{} {this.hashCode(), weights.length, theta, active.getClass().getName() } );
 
 		if ((cLayer < nHidden) || (cLayer > nHidden) || (cOutput > nOutputs)) // defining this layer's input mode.
 		{
-			if (debug) debugOut.println("  (wrong mode or complete network) \n= failure");
+			log.error("NeuralNetwork {} is in wrong mode or network is already complete!");
 			return false;
 		}
 		else // good to go.
 		{
 			int prevLayer = (nHidden == 0) ? nInputs : sizeHidden; // has hidden?
 
-			if (_weights.length != prevLayer) // check
+			if (weights.length != prevLayer) // check
 			{
-				if (debug) debugOut.println("  (weight array size != previous layer size) \n= failure");
+				log.error("NeuralNetwork {} new output Neuron has wrong number of weights to map against prior layer!",
+						this.hashCode() );
 				return false;
 			}
 			else
@@ -448,12 +461,13 @@ public class NeuralNetwork
 
 				if (outputLayer[idx] != null)
 				{
-					if (debug) debugOut.println("  (output node already bound!) \n= failure");
+					log.error("NeuralNetwork {} output {} already bound!", this.hashCode(), idx );
+
 					return false;
 				}
 				else
 				{
-					outputLayer[idx] = new Neuron(prevLayer, 0, alpha, phi, _theta, active); // output layer has no outputs.
+					outputLayer[idx] = new Neuron(prevLayer, 0, alpha, phi, theta, active); // output layer has no outputs.
 
 					Neuron connect;
 
@@ -461,12 +475,13 @@ public class NeuralNetwork
 					{
 						if (cLayer == 0) // previous layer was input layer -- there are no hidden layers.
 						{
-							if (debug) debugOut.println("  Connect is Input Layer " + String.valueOf(wC));
+							log.debug("NeuralNetwork {} output {} connect to input {}", this.hashCode(), idx, wC );
 							connect = inputLayer[wC];
 						}
 						else // previous layer was hidden layer.
 						{
-							if (debug) debugOut.println("  Connect is Hidden Layer <" + String.valueOf(cLayer - 1) + "," + String.valueOf(wC) + ">");
+							log.debug("NeuralNetwork {} output {} connect to hidden ({},{})",
+									new Object[] {this.hashCode(), idx, cLayer - 1, wC} );
 							connect = hiddenLayers[cLayer - 1][wC];
 						}
 
