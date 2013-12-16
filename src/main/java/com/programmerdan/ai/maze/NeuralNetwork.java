@@ -246,7 +246,7 @@ public class NeuralNetwork
 	public boolean addInput(double weight, double theta, ActivationFunction active)
 	{
 		log.debug("NeuralNetwork {} adding input Neuron with weight {}, activation {}, and function {}",
-				new Object{} {this.hashCode(), weight, theta, active.getClass().getName() } );
+				new Object[] {this.hashCode(), weight, theta, active.getClass().getName() } );
 
 		if (cLayer == -1) // defining input mode.
 		{
@@ -326,7 +326,7 @@ public class NeuralNetwork
 	public boolean addHidden(double[] weights, double theta, ActivationFunction active) // weights.length MUST == previous layer size
 	{
 		log.debug("NeuralNetwork {} adding hidden Neuron with {} weights, activation {}, and function {}",
-				new Object{} {this.hashCode(), weights.length, theta, active.getClass().getName() } );
+				new Object[] {this.hashCode(), weights.length, theta, active.getClass().getName() } );
 
 		if ((cLayer < 0) || (cLayer >= nHidden) || (!hasHidden)) // defining this layer's input mode.
 		{
@@ -397,13 +397,13 @@ public class NeuralNetwork
 
 						if (hiddenLayers[id1][id2].addInput(connect, weights[wC]))
 						{
-							this.debug("NeuralNetwork {} hidden ({},{}) bound to hidden ({},{}) with weight {}",
+							log.debug("NeuralNetwork {} hidden ({},{}) bound to hidden ({},{}) with weight {}",
 									new Object[] {this.hashCode(), id1, id2, id1 - 1, wC, weights[wC]} );
 						}
 						else
 						{
-							this.debug("NeuralNetwork {} hidden ({},{}) bind to hidden ({},{}) failed!",
-									new Object[] {this.hashCode(), id1, id2, id-1, wC} );
+							log.debug("NeuralNetwork {} hidden ({},{}) bind to hidden ({},{}) failed!",
+									new Object[] {this.hashCode(), id1, id2, id1-1, wC} );
 							return false;
 						}
 					} // loop through entire previous layer.
@@ -438,7 +438,7 @@ public class NeuralNetwork
 	public boolean addOutput(double[] weights, double theta, ActivationFunction active) // weights.length MUST == previous layer size
 	{
 		log.debug("NeuralNetwork {} adding output Neuron with {} weights, activation {}, and function {}",
-				new Object{} {this.hashCode(), weights.length, theta, active.getClass().getName() } );
+				new Object[] {this.hashCode(), weights.length, theta, active.getClass().getName() } );
 
 		if ((cLayer < nHidden) || (cLayer > nHidden) || (cOutput > nOutputs)) // defining this layer's input mode.
 		{
@@ -497,7 +497,8 @@ public class NeuralNetwork
 
 						if (outputLayer[idx].addInput(connect, weights[wC]))
 						{
-							log.debug("NeuralNetwork {} output {} bound to connect with weight {}", this.hashCode(), idx, weight[wC]);
+							log.debug("NeuralNetwork {} output {} bound to connect with weight {}",
+									this.hashCode(), idx, weights[wC]);
 						}
 						else
 						{

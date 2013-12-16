@@ -7,10 +7,13 @@ import java.io.*;
  *
  * @author Daniel Boston <programmerdan@gmail.com>
  * @version 1.0 April 17, 2007
+ *   Initial version
+ * @version 1.01 December 15, 2013
+ *   Cosmetic and other updates, comments, etc.
  */
 public class Keyboard
 {
-	BufferedReader in;
+	private BufferedReader in;
 
 	/**
 	 * Standard build using System.in
@@ -23,38 +26,38 @@ public class Keyboard
 	/**
 	 * Build using a specified {@link InputStream}
 	 *
-	 * @param	_in		The InputStream to use.
+	 * @param	in		The InputStream to use.
 	 */
-	public Keyboard(InputStream _in)
+	public Keyboard(InputStream in)
 	{
-		in = new BufferedReader(new InputStreamReader(_in));
+		this.in = new BufferedReader(new InputStreamReader(in));
 	}
 
 	/**
 	 * Shortcut for {@link printfull(String)}
 	 *
-	 * @param	_token	the String to print.
+	 * @param	token	the String to print.
 	 * @see {@link printfull(String)}
 	 */
-	public void printf(String _token)
+	public void printf(String token)
 	{
-		printfull( _token );
+		printfull( token );
 	}
 
 	/**
 	 * Prints a token repeatedly to fill a single row of screen text.
 	 *   A screen is assumed to be 80 characters in width.
 	 *
-	 * @param	_token	the String token to print repeatedly.
+	 * @param	token	the String token to print repeatedly.
 	 */
-	public void printfull(String _token)
+	public void printfull(String token)
 	{
-		int len = _token.length();
+		int len = token.length();
 		int repeat = 79 / len;
 
 		StringBuffer temp = new StringBuffer();
 		for (int a = 0; a < repeat; a++)
-			temp.append(_token);
+			temp.append(token);
 
 		System.out.println(temp.toString());
 	}
@@ -62,52 +65,52 @@ public class Keyboard
 	/**
 	 * Shortcut to {@link print(String, int)}, setting alignment to "left"
 	 *
-	 * @param	_s	The string to print, left aligned.
+	 * @param	s	The string to print, left aligned.
 	 */
-	public void printl(String _s)
+	public void printl(String s)
 	{
-		print(_s, -1);
+		print(s, -1);
 	}
 
 	/**
 	 * Shortcut to {@link print(String, int)}, setting alignment to "right"
 	 *
-	 * @param	_s	The string to print, right aligned.
+	 * @param	s	The string to print, right aligned.
 	 */
-	public void printr(String _s)
+	public void printr(String s)
 	{
-		print(_s, 1);
+		print(s, 1);
 	}
 
 	/**
 	 * Shortcut to {@link print(String, int)}, setting alignment to "center"
 	 *
-	 * @param	_s	The string to print, center aligned.
+	 * @param	s	The string to print, center aligned.
 	 */
-	public void printc(String _s)
+	public void printc(String s)
 	{
-		print(_s, 0);
+		print(s, 0);
 	}
 
 	/**
 	 * Prints a string with the specified alignment -- to the left, centered, or to the right.
 	 *
-	 * @param	_s	The String to print, aligned.
-	 * @param	_n 	The alignment control -- 0 for centered, 1 for right justify, and -1 (or else) for
+	 * @param	s	The String to print, aligned.
+	 * @param	n 	The alignment control -- 0 for centered, 1 for right justify, and -1 (or else) for
 	 *				  left justify.
 	 */
-	public void print(String _s, int _n)
+	public void print(String s, int n)
 	{
-		int len = _s.length();
+		int len = s.length();
 		if (len > 79)
 		{
-			print(_s.substring(0,79), _n);
-			print(_s.substring(79,len), _n); // recursive
+			print(s.substring(0,79), n);
+			print(s.substring(79,len), n); // recursive
 			return;
 		}
 		StringBuffer temp = new StringBuffer();
 		int border;
-		switch (_n)
+		switch (n)
 		{
 		case 0: // center justify
 			border = (79 - len) / 2;
@@ -115,7 +118,7 @@ public class Keyboard
 			for (int a = 0; a < border; a++)
 				temp.append(" ");
 
-			System.out.println(temp.toString() + _s);
+			System.out.println(temp.toString() + s);
 			break;
 		case 1: // right justify
 			border = (79 - len);
@@ -123,10 +126,10 @@ public class Keyboard
 			for (int a = 0; a < border; a++)
 				temp.append(" ");
 
-			System.out.println(temp.toString() + _s);
+			System.out.println(temp.toString() + s);
 			break;
 		default: // left justify
-			System.out.println(_s);
+			System.out.println(s);
 			break;
 		}
 	}

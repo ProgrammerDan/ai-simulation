@@ -1,11 +1,21 @@
 package com.programmerdan.ai.maze;
 
+import org.junit.Test;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Testing various encoding and decoding techniques, used by the Chromosome class.
  *
  * @author Daniel Boston <programmerdan@gmail.com>
- * @version 1.0 2010 (more recent than other code)
- * TODO: Refactor as actual tests!
+ * @version 1.0 2010
+ *    Tests written when making changes to encoding codes
+ * @version 1.01 December 15, 2013
+ *    I'm evaluating this bit of code. It seems to be a test/development piece of code. I'll evaluate
+ *    it against the code in chromosome.
  */
 public class EncodeTest
 {

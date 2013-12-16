@@ -27,7 +27,7 @@ public class NeuralNetworkTest {
 	 * verification simple.
 	 */
 	@Test
-	public void simpleNetworkTest (
+	public void simpleNetworkTest () {
 		NeuralNetwork brain = new NeuralNetwork(3, 5, 7, 3, 0.1, 0.2);
 
 		brain.addInput(.5, .1, AF_Tanh.Default); // distance input 0 - inf
