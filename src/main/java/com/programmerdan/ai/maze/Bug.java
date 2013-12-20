@@ -8,33 +8,80 @@ package com.programmerdan.ai.maze;
  *   brain characteristics of their forbears. Other future ideas could include epigentics -- allowing
  *   the "final" state of a Bug to influence their children.
  * Another fascinating idea would be to build the whole bug -- all variables in entire -- from a Chromosome.
+ * More ideas include graph-based neural networks instead of layer-based NN for a brain, cluster-graph based
+ *   NNs, and internal feedback mechanics -- allowing outputs to feed into inputs. Additionally, external
+ *   or system feedback mechanisms will be particularly useful -- allowing the present state of the Bug
+ *   to feed back into the NN.
  *
  * @author Daniel Boston <programmerdan@gmail.com>
  * @version 1.0 May 7, 2007
+ *    Initial release, with a NN built from a Chromosome, expecting several inputs and ouputs.
+ * @version 1.01 Christmas 19, 2013
+ *    Fixing up comments, general class cleanup.
  */
 public class Bug extends Position
 {
+	/**
+	 * Rotation factor
+	 */
 	private double direction; // rotation
+	/**
+	 * Motion Factor // velocity
+	 */
 	private double velocity; // motion
 
+	/**
+	 * Rotation multiplier
+	 */
 	private double rotateMult; // rotation multiplication
+	/**
+	 * Veloity multiplier
+	 */
 	private double speedMult; // velocity multiplication
 
+	/**
+	 * Success counter for fitness computation
+	 */
 	private int success;
+	/**
+	 * Failure counter for fitness computation
+	 */
 	private int failure;
 
+	/**
+	 * Actually fitness computation
+	 */
 	private double fitness;
 
-	/** Distance input flag. The input which should be a normalized distance to the nearest object seen */
+	/**
+	 * TODO: Make this an enumeration!
+	 *
+	 * Distance input flag. The input which should be a normalized distance to the nearest object seen
+	 */
 	public static int DISTANCE = 0;
-	/** Position input flag. The input which should be a normalized angle to the nearest object seen */
+	/**
+	 *  Position input flag. The input which should be a normalized angle to the nearest object seen
+	 */
 	public static int POSITION = 1;
-	/** Type input flag. The input which should indicate what is seen; wall, other bug, etc. */
+	/**
+	 * Type input flag. The input which should indicate what is seen; wall, other bug, etc.
+	 */
 	public static int TYPE = 2;
 
+	/**
+	 * Number of inputs.
+	 */
 	private int INPUTS = 4; // lets make this variable now.
+	/**
+	 * The type of each input
+	 */
 	private int[] inputClasses;
+	/**
+	 * Default number of hidden layers
+	 */
 	private int HIDDENS = 5;
+	/**
+	 * Default number of hidden nodes per layer.
 	private int HIDDENW = 7;
 
 	/**
