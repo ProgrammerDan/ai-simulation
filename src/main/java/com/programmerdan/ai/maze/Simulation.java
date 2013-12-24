@@ -8,15 +8,17 @@ import java.awt.event.*;
 import java.io.*;
 
 /**
- *	@author Daniel Boston <programmerdan@gmail.com>
- *	@version 1.0 November 22, 2010
- *
  *  Class: Artificial Intelligence
  *
  *	This is a simulation model that uses the map and "bug" class to generationally create a "better maze solver" at least for the training set.
+ *
+ *	@author Daniel Boston <programmerdan@gmail.com>
+ *	@version 1.0 November 22, 2010
+ *    Initial release
+ *  @version 1.01 December 23, 2013
+ *    Cleanup.
  */
-public class Simulation extends JPanel implements MouseListener
-{
+public class Simulation extends JPanel implements MouseListener {
 	// We need a SimulationMap for each maze we are training against.
 	// We need a list of "bugs" that will be traversing our maze.
 	// We will also have a list of brainless bugs that will use a random walk model to traverse the maze.

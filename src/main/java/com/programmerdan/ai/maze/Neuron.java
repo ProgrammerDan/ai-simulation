@@ -22,8 +22,7 @@ import org.slf4j.LoggerFactory;
  * @see {@link NeuralNetwork} for how these Neurons link together
  * @see {@link ActivationFunction} for a listing of activation functions usable by these Neurons.
  */
-public class Neuron
-{
+public class Neuron {
 	private final Logger log = LoggerFactory.getLogger(Neuron.class);
 
 	/**
@@ -111,20 +110,19 @@ public class Neuron
 	 * @param	theta		the activation threshold
 	 * @param	act		the {@link ActivationFunction}
 	 */
-	public Neuron(int inputs, int outputs, double alpha, double phi, double theta, ActivationFunction act)
-	{
+	public Neuron(int inputs, int outputs, double alpha, double phi, double theta, ActivationFunction act) {
 		this.inputs = inputs;
 		this.outputs = outputs;
 
-		if (this.inputs > 0)
-		{
+		if (this.inputs > 0) {
 			this.inList = new Neuron[this.inputs];
 			this.inListWeight = new double[this.inputs];
 			this.inputValue = new double[this.inputs];
 		}
 
-		if (this.outputs > 0)
+		if (this.outputs > 0) {
 			this.outList = new Neuron[this.outputs];
+		}
 
 		this.outputValue = 0.0;
 
@@ -164,8 +162,7 @@ public class Neuron
 	 *
 	 * @return the double value representing this neuron's current output strength.
 	 */
-	public double getOutput()
-	{
+	public double getOutput() {
 		return outputValue;
 	}
 
@@ -174,8 +171,7 @@ public class Neuron
 	 *
 	 * @param	output	the new output value.
 	 */
-	protected void setOutput(double output)
-	{
+	protected void setOutput(double output) {
 		outputValue = output;
 		log.debug("Neuron {} update output to {}", this.hashCode(), outputValue);
 	}
@@ -188,18 +184,14 @@ public class Neuron
 	 * @param	weight	the weight of this input
 	 * @return			True if the Neuron was added, False if the input set is full.
 	 */
-	public boolean addInput(Neuron in, double weight)
-	{
-		if (inCount < inputs)
-		{
+	public boolean addInput(Neuron in, double weight) {
+		if (inCount < inputs) {
 			inList[inCount] = in;
 			inListWeight[inCount] = weight;
 			inCount++;
 			log.debug("Neuron {} linked Neuron {} as input with weight {}", new Object[] {this.hashCode(), in.hashCode(), weight} );
 			return true;
-		}
-		else
-		{
+		} else {
 			log.warn("Neuron {} FAILED to link Neuron {} as input with weight {}", new Object[] {this.hashCode(), in.hashCode(), weight} );
 			return false;
 		}
@@ -211,17 +203,13 @@ public class Neuron
 	 * @param	out	the Neuron to add as an output
 	 * @return			True if the Neuron was added, False if the output set is full.
 	 */
-	public boolean addOutput(Neuron out)
-	{
-		if (outCount < outputs)
-		{
+	public boolean addOutput(Neuron out) {
+		if (outCount < outputs) {
 			outList[outCount] = out;
 			outCount++;
 			log.debug("Neuron {} linked Neuron {} as output", this.hashCode(), out.hashCode());
 			return true;
-		}
-		else
-		{
+		} else {
 			log.debug("Neuron {} FAILED to link Neuron {} as output", this.hashCode(), out.hashCode());
 			return false;
 		}
@@ -235,8 +223,7 @@ public class Neuron
 	 *
 	 * @see {@link ActivationFunction.activate}
 	 */
-	public void step()
-	{
+	public void step() {
 		log.debug("Neuron {} step function called", this.hashCode() );
 
 		setOutput( activator.activate(inputValue, inList, inListWeight, theta) );
@@ -251,17 +238,14 @@ public class Neuron
 	 *   input and using the current output, the input weights are adjusted.
 	 * Learning is applied first, then forgetting, for each input weight in order.
 	 */
-	private void learn()
-	{
+	private void learn() {
 		log.debug("Neuron {} learning function called", this.hashCode() );
 
 		double nextWeight = 0.0;
 
-		for (int wC = 0; wC < inCount; wC++)
-		{
+		for (int wC = 0; wC < inCount; wC++) {
 			nextWeight = 0.0;
-			if (inList[wC] != null)
-			{
+			if (inList[wC] != null) {
 				nextWeight = alpha * inList[wC].getOutput() * outputValue; // alpha * xi * yj (learning)
 				nextWeight -= phi * outputValue * inListWeight[wC]; // phi * yj * wij (forgetting)
 			}
@@ -272,15 +256,17 @@ public class Neuron
 			// if accumulation is the same sign as weight, slow it down as it nears maximum.
 			//  if opposite sign, apply as given.
 
-			if (Math.signum(inListWeight[wC]) == Math.signum(nextWeight))
+			if (Math.signum(inListWeight[wC]) == Math.signum(nextWeight)) {
 				nextWeight = nextWeight * Math.pow( (1.0 + Math.cos( (inListWeight[wC] * Math.PI) / MAXWEIGHT) ) / 2.0 , 0.75);
+			}
 
 			inListWeight[wC] += nextWeight; // accumulate.
 
-			if (Math.abs(inListWeight[wC]) > MAXWEIGHT)
+			if (Math.abs(inListWeight[wC]) > MAXWEIGHT) {
 				log.warn("Neuron {} input weight for input {} is too high at {}", new Object[] { this.hashCode(), wC, inListWeight[wC] } );
-			else
+			} else {
 				log.debug("Neuron {} input weight for input {} is adjusted to {}", new Object[] { this.hashCode(), wC, inListWeight[wC] } );
+			}
 		}
 	}
 
@@ -289,17 +275,14 @@ public class Neuron
 	 *
 	 * @return	The input weights and threshold.
 	 */
-	public String toString()
-	{
+	public String toString() {
 		StringBuffer ret = new StringBuffer("[");
 		ret.append(this.hashCode());
 		ret.append("]<");
 
-		for (int sC = 0; sC < inCount; sC++)
-		{
+		for (int sC = 0; sC < inCount; sC++) {
 			ret.append(inListWeight[sC]);
-			if (sC < inCount - 1)
-			{
+			if (sC < inCount - 1) {
 				ret.append(",");
 			}
 		}

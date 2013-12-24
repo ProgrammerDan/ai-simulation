@@ -6,8 +6,7 @@ package com.programmerdan.ai.maze;
  * @author Daniel Boston <programmerdan@gmail.com>
  * @version 1.0 2007
  */
-public class Position
-{
+public class Position {
 	//TODO: Evaluate why these are protected instead of private.
 	double x;
 	double y;
@@ -20,8 +19,7 @@ public class Position
 	 *
 	 * TODO: cleanup C style params
 	 */
-	public Position(double _x, double _y)
-	{
+	public Position(double _x, double _y) {
 		x = _x;
 		y = _y;
 	}
@@ -31,8 +29,7 @@ public class Position
 	 *
 	 * @return	the X coord of this position.
 	 */
-	public double getX()
-	{
+	public double getX() {
 		return x;
 	}
 
@@ -41,8 +38,7 @@ public class Position
 	 *
 	 * @return	the Y coord of this position.
 	 */
-	public double getY()
-	{
+	public double getY() {
 		return y;
 	}
 }

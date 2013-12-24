@@ -103,20 +103,41 @@ public class Bug extends Position
 	 */
 	public int HIDDENW() { return HIDDENW; }
 
+	/**
+	 * Latest input value "registers"
+	 */
 	private double[] inputStore;
 
-	/** The Velocity output parameter flag */
+	/**
+	 * The Velocity output parameter flag
+	 */
 	public static int VEL = 0;
-	/** The Delta (direction) output parameter flag */
+	/**
+	 * The Delta (direction) output parameter flag
+	 */
 	public static int DELTA = 1;
 
-	/** The number of outputs for this bug */
+	/**
+	 * The number of outputs for this bug
+	 */
 	public static int OUTPUTS = 2;
 
+	/**
+	 * Latest output value "registers"
+	 */
 	private double[] outputStore;
+	/**
+	 * Output "classes", type of output
+	 */
 	private int[] outputClasses;
 
+	/**
+	 * The makeup of this Bug -- its Chromosome.
+	 */
 	private Chromosome dna;
+	/**
+	 * The brain of this bug!
+	 */
 	private NeuralNetwork brain;
 
 	/**
@@ -152,47 +173,47 @@ public class Bug extends Position
 	 * The Bug's brain size is controlled by hiddenwidth and hidden size. Choose widths and size appropriate to the number of inputs.
 	 * There are quite a few other factors here, each described below.
 	 *
-	 * @param	_x				The starting X coord of this Bug.
-	 * @param	_y				The starting Y coord of this Bug.
-	 * @param	_dir			The starting direction of this Bug (an angle, not in radians).
-	 * @param	_vel			The starting velocity of this Bug.
-	 * @param	_rotate			The rotation multiple of this Bug (e.g. this Bug can rotate faster or slower than other Bugs).
-	 * @param	_speed			The velocity multiple of this Bug (e.g. this Bug is quicker or slower than other Bugs).
-	 * @param	_inputs			The input classes -- determines the way to interpret the Gene used to weight this input will be constructed.
-	 *							  Class 0 uses function {@link midGene()}, class 1 uses {@link fitGene()}, and any other class uses {@link tinGene()}.
-	 * 							  Note that regardless of class, {@link AF_Tanh} is the {@link ActivationFunction} used.
-	 * @param	_hiddenwidth	The size of every hidden brain layer.
-	 * @param	_hiddensize		The number of hidden layers.
-	 * @param	_outputs		The output classes -- determines which {@link ActivationFunction} applies to the outputs.
-	 * @param	_DNA			The DNA to use when building the bug's brain.
+	 * @param	x			The starting X coord of this Bug.
+	 * @param	y			The starting Y coord of this Bug.
+	 * @param	dir			The starting direction of this Bug (an angle, not in radians).
+	 * @param	vel			The starting velocity of this Bug.
+	 * @param	rotate		The rotation multiple of this Bug (e.g. this Bug can rotate faster or slower than other Bugs).
+	 * @param	speed		The velocity multiple of this Bug (e.g. this Bug is quicker or slower than other Bugs).
+	 * @param	inputs		The input classes -- determines the way to interpret the Gene used to weight this input will be constructed.
+	 *						  Class 0 uses function {@link midGene()}, class 1 uses {@link fitGene()}, and any other class uses {@link tinGene()}.
+	 * 						  Note that regardless of class, {@link AF_Tanh} is the {@link ActivationFunction} used.
+	 * @param	hiddenwidth	The size of every hidden brain layer.
+	 * @param	hiddensize	The number of hidden layers.
+	 * @param	outputs		The output classes -- determines which {@link ActivationFunction} applies to the outputs.
+	 * @param	DNA			The DNA to use when building the bug's brain.
 	 **/
-	public Bug(double _x, double _y, double _dir, double _vel, double _rotate, double _speed, int[] _inputs, int _hiddenwidth, int _hiddensize, int[] _outputs, Chromosome _DNA)
+	public Bug(double x, double y, double dir, double vel, double rotate, double speed, int[] inputs, int hiddenwidth, int hiddensize, int[] outputs, Chromosome DNA)
 	{
-		super(_x, _y);
+		super(x, y);
 
-		direction = _dir;
-		velocity = _vel;
+		direction = dir;
+		velocity = vel;
 
-		rotateMult = _rotate;
-		speedMult = _speed;
+		rotateMult = rotate;
+		speedMult = speed;
 
 		success = 0;
 		failure = 0;
 		fitness = 0.0;
 
-		INPUTS = _inputs.length;
-		inputClasses = _inputs;
-		HIDDENS = _hiddensize;
-		HIDDENW = _hiddenwidth;
+		INPUTS = inputs.length;
+		inputClasses = inputs;
+		HIDDENS = hiddensize;
+		HIDDENW = hiddenwidth;
 
 		inputStore = new double[INPUTS];
 
 		outputStore = new double[OUTPUTS];
 
-		outputClasses = _outputs;
+		outputClasses = outputs;
 
-		// Build Chromosome
-		dna = _DNA;
+		// Build Chromosme
+		dna = DNA;
 
 		if (outputClasses.length != OUTPUTS)
 		{

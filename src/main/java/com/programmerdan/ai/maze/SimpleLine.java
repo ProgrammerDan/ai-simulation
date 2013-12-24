@@ -8,8 +8,7 @@ package com.programmerdan.ai.maze;
  *
  * TODO: cleanup getters
  */
-public class SimpleLine
-{
+public class SimpleLine {
 	private double x1 = 0.0;
 	private double y1 = 0.0;
 	private double x2 = 0.0;
@@ -80,8 +79,7 @@ public class SimpleLine
 	 * @param	x2	The second X coord.
 	 * @param	y2	The second Y coord.
 	 */
-	public SimpleLine(double x1, double y1, double x2, double y2)
-	{
+	public SimpleLine(double x1, double y1, double x2, double y2) {
 		this.x1 = x1;
 		this.y1 = y1;
 		this.x2 = x2;
@@ -91,8 +89,7 @@ public class SimpleLine
 	/**
 	 * Creates a zeroed line (all coords are initialized to 0.0.
 	 */
-	public SimpleLine()
-	{
+	public SimpleLine() {
 		x1 = 0.0;
 		x2 = 0.0;
 		y1 = 0.0;
