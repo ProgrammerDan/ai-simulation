@@ -200,7 +200,7 @@ public class Chromosome implements Cloneable
 			// pick the crossover points
 			for (int l = 0; l < times; l++)
 			{
-				crosspoints[l] = (int) (Math.random() * maxPoint);
+				crosspoints[l] = (int) (Math.random() * (double) maxPoint);
 			}
 
 			// sort them, so that they occur in a line
@@ -256,8 +256,8 @@ public class Chromosome implements Cloneable
 			throw new RuntimeException("Failed to clone Chromosome");
 		}
 
-		for (int i = 0; i < nGenes; i++) {
-			ret.addGene(this.getGene(i).clone());
+		if (ret.numGenes() == 0) {
+			throw new RuntimeException("Genes not cloned!");
 		}
 
 		return ret;
