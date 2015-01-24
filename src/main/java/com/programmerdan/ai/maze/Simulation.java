@@ -694,6 +694,8 @@ public class Simulation extends JPanel implements MouseListener {
 		else
 		{
 			int parentpool = Math.min((int) ((double) BUGS * preservation), c);
+			if (parentpool < 1)
+				parentpool = 1;
 
 			Bug[] Spawn = new Bug[parentpool];
 
@@ -736,11 +738,18 @@ public class Simulation extends JPanel implements MouseListener {
 
 					Actor[a][0] = cloneBug( oldActors[x1][0], 0 );
 				}
-				else if (cCross < crossover) // yes!
+				else if (cCross < crossover && parentpool > 1) // yes!
 				{
 					// perform crossover. Pick two at random.
-					int x1 = (int) (Math.random() * parentpool);
-					int x2 = (int) (Math.random() * parentpool);
+					int x1 = 0;
+					int x2 = 1;
+
+					if (parentpool > 2) {
+						x1 = (int) (Math.random() * parentpool);
+						while (x1 == x2) {
+							x2 = (int) (Math.random() * parentpool);
+						}
+					}
 
 					//System.out.println("Crossing: " + x1 + ", " + x2);
 
