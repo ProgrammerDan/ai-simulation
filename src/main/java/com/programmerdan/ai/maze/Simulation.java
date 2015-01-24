@@ -1178,11 +1178,11 @@ public class Simulation extends JPanel implements MouseListener {
 						g2.fillOval( (int) MazeXOffset[e] + getSimBorder() + (int) (MazeScaleFactor[e] * (temp.getX() - .5)),
 									 (int) MazeYOffset[e] + getSimBorder() + (int) (MazeScaleFactor[e] * (temp.getY() - .5)), (int) (MazeScaleFactor[e] * 1), (int) (MazeScaleFactor[e] * 1));
 
-						g2.setColor(acColor.brighter());
+						/*g2.setColor(acColor.brighter());
 						g2.drawLine( (int) MazeXOffset[e] + getSimBorder() + (int) (MazeScaleFactor[e] * temp.getX()),
 									 (int) MazeYOffset[e] + getSimBorder() + (int) (MazeScaleFactor[e] * temp.getY()),
 									 (int) MazeXOffset[e] + getSimBorder() + (int) (MazeScaleFactor[e] * (temp.getX() + lm * tVec[0])),
-									 (int) MazeYOffset[e] + getSimBorder() + (int) (MazeScaleFactor[e] * (temp.getY() + lm * tVec[1])) );
+									 (int) MazeYOffset[e] + getSimBorder() + (int) (MazeScaleFactor[e] * (temp.getY() + lm * tVec[1])) );*/
 
 						tVec = temp.getTrueVector();
 
