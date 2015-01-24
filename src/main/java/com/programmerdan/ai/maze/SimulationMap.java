@@ -3,6 +3,7 @@ package com.programmerdan.ai.maze;
 import java.io.*;
 import java.awt.geom.*;
 import java.text.*;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -398,44 +399,59 @@ public class SimulationMap {
 		}
 	}
 
+	double[] extent = null;
+
 	/**
 	 * Iterates over all wall lines and determines the coordinate extent of the map.
 	 *
 	 * @return	Array of map extents in the order min x, max x, min y, max y
 	 */
 	public double[] mapExtent() {
-		double minx, miny, maxx, maxy;
-		minx = Double.MAX_VALUE; miny = Double.MAX_VALUE;
-		maxx = Double.MIN_VALUE; maxy = Double.MIN_VALUE;
 
-		for (SimpleLine wall : wallLines) {
-			if (wall.x1() < minx) minx = wall.x1();
-			if (wall.x2() < minx) minx = wall.x2();
-			if (wall.x1() > maxx) maxx = wall.x1();
-			if (wall.x2() > maxx) maxx = wall.x2();
-			if (wall.y1() < miny) miny = wall.y1();
-			if (wall.y2() < miny) miny = wall.y2();
-			if (wall.y1() > maxy) maxy = wall.y1();
-			if (wall.y2() > maxy) maxy = wall.y2();
+		if (extent == null) {
+			double minx, miny, maxx, maxy;
+			minx = Double.MAX_VALUE; miny = Double.MAX_VALUE;
+			maxx = Double.MIN_VALUE; maxy = Double.MIN_VALUE;
+
+			for (SimpleLine wall : wallLines) {
+				if (wall.x1() < minx) minx = wall.x1();
+				if (wall.x2() < minx) minx = wall.x2();
+				if (wall.x1() > maxx) maxx = wall.x1();
+				if (wall.x2() > maxx) maxx = wall.x2();
+				if (wall.y1() < miny) miny = wall.y1();
+				if (wall.y2() < miny) miny = wall.y2();
+				if (wall.y1() > maxy) maxy = wall.y1();
+				if (wall.y2() > maxy) maxy = wall.y2();
+			}
+
+			extent = new double[] { minx, maxx, miny, maxy };
 		}
 
-		return new double[] { minx, maxx, miny, maxy };
+		return extent;
 	}
 
 	/**
 	 * Give a series of rays radiating from a central point, returns the distance to the nearest wall.
 	 * If no wall is intersected within sight distance, returns Double.MAX_VALUE for that ray.
+	 * Note this function only creates a new array if it must; take this is a warning to calling functions.
 	 *
 	 * @param	rays	The "rays" to find wall intersections on.
 	 * @return			A double[] of the same size as rays, containing distances to the nearest walls.
 	 */
 	public double[] nearestWalls(SimpleLine[] rays) {
-		double[] near = new double[rays.length];
-		int[] wallidx = new int[rays.length];
-		for (int k = 0; k < rays.length; k++) {
-			near[k] = Double.MAX_VALUE;
-			wallidx[k] = -1;
+		double[] near = null;
+		int[] wallidx = null;
+
+		if (lastNear != null && lastNear.length == rays.length) {
+			near = lastNear;
+			wallidx = lastWallIdx;
+		} else {
+			near = new double[rays.length];
+			wallidx = new int[rays.length];
 		}
+
+		Arrays.fill(near, Double.MAX_VALUE);
+		Arrays.fill(wallidx, -1);
 
 		// Compute over all wall lines.
 		for (int j = 0; j < wallLines.length; j++) {

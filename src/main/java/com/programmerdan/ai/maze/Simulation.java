@@ -17,6 +17,8 @@ import java.io.*;
  *    Initial release
  *  @version 1.01 December 23, 2013
  *    Cleanup.
+ *  @version 1.02 January 22, 2015
+ *    Return to compilability due to changes in other files. More work remains.
  */
 public class Simulation extends JPanel implements MouseListener {
 	// We need a SimulationMap for each maze we are training against.
@@ -57,6 +59,7 @@ public class Simulation extends JPanel implements MouseListener {
 	private double[][] ActorPathLength;
 
 	private double[] ActorEyes;
+	private double[] ActorEyeSight;
 
 	private SimulationMap[] Maze;
 	private File[] MazeStatistics;
@@ -321,7 +324,7 @@ public class Simulation extends JPanel implements MouseListener {
 
 				for ( int i = 0; i < MAZES; i++)
 				{
-					fileOut.write(Maze[i].title() + "\r\n");
+					fileOut.write(Maze[i].getTitle() + "\r\n");
 					/*fileOut.write(MazeMinFitness[i]);
 					fileOut.write("\r\n");
 					fileOut.write(MazeAvgFitness[i]);
@@ -432,6 +435,8 @@ public class Simulation extends JPanel implements MouseListener {
 		ActorPathLength = new double[BUGS][MAZES];
 
 		ActorEyes = new double[] {15.0, 14.0,13.0,12.0,11.0,10.0,-10.0,-11.0,-12.0,-13.0,-14.0, -15.0}; // bug looks ahead.
+		ActorEyeSight = new double[ActorEyes.length];
+		Arrays.fill(ActorEyeSight, sightDistance); // TODO Sight length should be genomic, not a simulation parameter.
 
 		MazeMinFitness = new double[MAZES];
 		MazeMaxFitness = new double[MAZES];
@@ -536,13 +541,13 @@ public class Simulation extends JPanel implements MouseListener {
 		{
 			for (int i = 0; i < MAZES; i++)
 			{
-				MazeStatistics[i] = new File(filename + "_" + Maze[i].title() + ".csv");
+				MazeStatistics[i] = new File(filename + "_" + Maze[i].getTitle() + ".csv");
 
 				if (!MazeStatistics[i].exists())
 				{
 					PrintWriter dos = new PrintWriter( new BufferedWriter( new FileWriter( MazeStatistics[i] ) ) );
 
-					dos.println(",Fitness,,,Path Progress,,,Steps,," + Maze[i].title() );
+					dos.println(",Fitness,,,Path Progress,,,Steps,," + Maze[i].getTitle() );
 					dos.println("Min,Max,Avg,Min,Max,Avg,Min,Max,Avg,Actors");
 
 					dos.flush();
@@ -1006,13 +1011,20 @@ public class Simulation extends JPanel implements MouseListener {
 			return false;
 	}
 
+	SimpleLine[] rays = null;
+
 	private void setInput(Bug cur, int idx, int midx)
 	{
-		SimpleLine[] rays = new SimpleLine[ActorEyes.length];
+		if (rays == null || rays.length != ActorEyes.length) {
+			rays = new SimpleLine[ActorEyes.length];
+
+			for (int i = 0; i < rays.length; i++) {
+				rays[i] = new SimpleLine();
+			}
+		}
 
 		for (int i = 0; i < rays.length; i++)
 		{
-			rays[i] = new SimpleLine();
 			rays[i].setX1( cur.getX() );
 			rays[i].setY1( cur.getY() );
 			rays[i].setX2( cur.getX() + ( sightDistance * Math.cos( Math.toRadians( cur.getDir() + ActorEyes[i] ) ) ) );
@@ -1021,7 +1033,7 @@ public class Simulation extends JPanel implements MouseListener {
 
 		double[] nearPoints = Maze[midx].nearestWalls(rays);
 
-		double[] normPoints = SimulationMap.normalizeSight(nearPoints, ActorEyes, 1.0, 0.0);
+		double[] normPoints = SimulationMap.normalizeSight(nearPoints, ActorEyeSight, 1.0, 0.0);
 
 		for (int i = 0; i < rays.length; i++)
 		{
@@ -1069,7 +1081,7 @@ public class Simulation extends JPanel implements MouseListener {
 			{
 				g2.setColor(Color.BLACK);
 
-				SimpleLine[] walls = Maze[b].walls();
+				SimpleLine[] walls = Maze[b].getWalls();
 
 				for (int c = 0; c < walls.length; c++)
 				{
@@ -1081,7 +1093,7 @@ public class Simulation extends JPanel implements MouseListener {
 
 				g2.setColor(lightBlue);
 
-				SimpleLine[] paths = Maze[b].paths();
+				SimpleLine[] paths = Maze[b].getPaths();
 
 				for (int c = 0; c < paths.length; c++)
 				{
@@ -1216,7 +1228,7 @@ public class Simulation extends JPanel implements MouseListener {
 				g2.drawString("M" + Integer.toString(e), getSimBorder() + e * 100,2*m);
 
 				g2.drawString(Integer.toString(a[e]), getSimBorder() + e * 100,3*m);
-				g2.drawString(Double.toString(Maze[e].pathLength()), getSimBorder() + e * 100,4*m);
+				g2.drawString(Double.toString(Maze[e].getPathLength()), getSimBorder() + e * 100,4*m);
 				g2.drawString(Double.toString(Math.round(avgPath[e] * 100000.0) / 100000.0),  getSimBorder() + e * 100,5*m);
 				g2.drawString(Double.toString(Math.round(maxPath[e] * 100000.0) / 100000.0),  getSimBorder() + e * 100,6*m);
 				g2.drawString(Double.toString(Math.round(avgProgress[e] * 100000.0) / 1000.0), getSimBorder() + e * 100,7*m);

@@ -82,6 +82,7 @@ public class Bug extends Position
 	private int HIDDENS = 5;
 	/**
 	 * Default number of hidden nodes per layer.
+	 */
 	private int HIDDENW = 7;
 
 	/**
