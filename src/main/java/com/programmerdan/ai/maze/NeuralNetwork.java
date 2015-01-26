@@ -187,6 +187,10 @@ public class NeuralNetwork
 			nf[ nfi++ ] = outputLayer[k].getOutput();
 		}
 
+		if (Math.random() < .001) {
+			System.out.println("" + nf.length + ": " + nfi);
+		}
+
 		networkFactors = nf;
 
 		return nf;
@@ -475,7 +479,7 @@ public class NeuralNetwork
 					}
 
 					factorSize += weights.length + 1; // num weights + threshold.
-					diagnosticSize += weights.length;
+					diagnosticSize ++; //neuron
 
 					return true;
 				}
@@ -573,7 +577,7 @@ public class NeuralNetwork
 						cLayer ++; // done this layer, done the network!
 					}
 					factorSize += weights.length + 1; // num weights + threshold.
-					diagnosticSize += weights.length;
+					diagnosticSize ++; //neuron
 
 					return true;
 				}
