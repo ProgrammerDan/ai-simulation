@@ -119,7 +119,12 @@ public class NeuralNetwork
 	private int factorSize;
 
 	/**
-	 * Debug param revealing the internals of the Neural Network
+	 * Diagnostic setup -- number of discrete propagating outputs in the network, configured during creation.
+	 */
+	private int diagnosticSize;
+
+	/**
+	 * Debug param revealing the internals of the Neural Network (including diagnostics)
 	 */
 	private double[] networkFactors;
 
@@ -134,7 +139,7 @@ public class NeuralNetwork
 	public double[] getNetworkFactors()
 	{
 		if (networkFactors == null) {
-			networkFactors = new double[factorSize];
+			networkFactors = new double[factorSize + diagnosticSize];
 		}
 		double[] nf = networkFactors;
 
@@ -146,11 +151,15 @@ public class NeuralNetwork
 
 		for (int k = 0; k < nInputs; k ++)
 		{
+			nf[ nfi++ ] = inputHandlers[k].getOutput();
+
 			double[] inweights = inputLayer[k].getInWeights(); // weights.
 			for (int j = 0; j < inweights.length; j ++)
 				nf[ nfi++ ] = inweights[j];
 
 			nf[ nfi++ ] = inputLayer[k].getTheta(); // activation.
+
+			nf[ nfi++ ] = inputLayer[k].getOutput();
 		}
 
 		for (int k = 0; k < nHidden; k ++)
@@ -162,6 +171,8 @@ public class NeuralNetwork
 					nf[ nfi++ ] = inweights[j];
 
 				nf[ nfi++ ] = hiddenLayers[k][i].getTheta();
+
+				nf[ nfi++ ] = hiddenLayers[k][i].getOutput();
 			}
 		}
 
@@ -172,6 +183,8 @@ public class NeuralNetwork
 				nf[ nfi++ ] = inweights[j];
 
 			nf[ nfi++ ] = outputLayer[k].getTheta();
+
+			nf[ nfi++ ] = outputLayer[k].getOutput();
 		}
 
 		networkFactors = nf;
@@ -345,6 +358,7 @@ public class NeuralNetwork
 			}
 
 			factorSize += 2; // weight, threshold.
+			diagnosticSize += 2; // handler, and neuron.
 
 			return true;
 		}
@@ -461,6 +475,7 @@ public class NeuralNetwork
 					}
 
 					factorSize += weights.length + 1; // num weights + threshold.
+					diagnosticSize += weights.length;
 
 					return true;
 				}
@@ -558,6 +573,7 @@ public class NeuralNetwork
 						cLayer ++; // done this layer, done the network!
 					}
 					factorSize += weights.length + 1; // num weights + threshold.
+					diagnosticSize += weights.length;
 
 					return true;
 				}

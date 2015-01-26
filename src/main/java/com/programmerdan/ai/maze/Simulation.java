@@ -1274,11 +1274,15 @@ public class Simulation extends JPanel implements MouseListener {
 
 		int i = 0;
 
+		System.out.println(squaresX + "," + squaresY);
+
 		for (int j = 0; j < squaresY; j ++)
 		{
 			for (int k = 0; k < squaresX; k ++)
 			{
 				double[] extent = Maze[i].mapExtent();
+
+				System.out.println("" + extent);
 
 				MazeScaleFactor[i] = Math.min( (squareSizeX * .9) / (extent[1] - extent[0]), (squareSizeY * .9) / (extent[3] - extent[2]) );
 				MazeXOffset[i]     = squareSizeX * (double) k + squareSizeX * .55 - MazeScaleFactor[i] * extent[0] - simBorder;
@@ -1444,12 +1448,34 @@ public class Simulation extends JPanel implements MouseListener {
     public void mouseExited(MouseEvent e) {
     }
 
+	private Bug lastDebug;
+
 	// Was there a click? Is so, pause the simulation or unpause.
     public void mouseClicked(MouseEvent e) {
-		System.out.println(active);
-		if (active)
-			active = false;
-		else
-			active = true;
+		if (e.getButton() == MouseEvent.BUTTON1) {
+			System.out.println(active);
+			if (active)
+				active = false;
+			else
+				active = true;
+		} else if (e.getButton() == MouseEvent.BUTTON2) {
+			System.out.println("Start Debug: " + e.getX() + "," + e.getY());
+			for (int i = 0; i < MAZES; i++) {
+				for (int j = 0; j < BUGS; j++) {
+					int bX = (int) MazeXOffset[i] + getSimBorder() + (int) (MazeScaleFactor[i] * Actor[j][i].getX());
+					int bY = (int) MazeYOffset[i] + getSimBorder() + (int) (MazeScaleFactor[i] * Actor[j][i].getY());
+					System.out.println("Test Bug: " + bX + "," + bY);
+					if ( Math.abs(bX - e.getX()) < 2.0 && Math.abs(bY - e.getY()) < 2.0 ) {
+						System.out.println("Found Bug: " + j);
+						if (lastDebug != null) {
+							lastDebug.toggleDebug();
+						}
+						lastDebug = Actor[j][i];
+						lastDebug.toggleDebug();
+						return;
+					}
+				}
+			}
+		}
     }
 }

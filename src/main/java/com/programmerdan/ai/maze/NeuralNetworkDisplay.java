@@ -68,7 +68,7 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 				this.repaint();
 			}
 			try {
-				Thread.sleep(0);
+				Thread.sleep(1000/30);
 			} catch (InterruptedException ie) {
 				// do nothing.
 			}
@@ -97,16 +97,57 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 		g2.drawString("Forgetting (\u03a6): " + factors[1], 20 + LFwidth, m);
 
 		// Draw Input weights and Theta
-		int n = m/3;
+		int n = m*2;
 		int nf = 2;
+		int fieldWidth = 100;
 
 		for (int i = 0; i < network.getNumInputs(); i++) {
-			Color inputColor = new Color( factors[nf+1] < 0f ? 1f : 0f, 0f, factors[nf+1] < 0f ? 0f : (float) (factors[nf+1] / Neuron.MAXWEIGHT));
+			// raw input
+			g2.setColor(Color.GREEN);
+			String IV = Double.toString(factors[nf]);
+			int IVwidth = g2.getFontMetrics().stringWidth(IV);
+			g2.drawString(IV, 10, m*(3+2*i));
+			if (IVwidth > fieldWidth) {
+				g2.clearRect(10+fieldWidth, m*(2+2*i), IVwidth - fieldWidth, m);
+			}
+
+			// weight
+			g2.setColor(Color.RED);
+			String weight = Double.toString(factors[nf+1]);
+			int weightWidth = g2.getFontMetrics().stringWidth(weight);
+			g2.drawString(weight, 20+fieldWidth, m*(3+2*i));
+			if (weightWidth > fieldWidth) {
+				g2.clearRect(20+fieldWidth*2, m*(2+2*i), weightWidth - fieldWidth, m);
+			}
+
+			// activation (theta)
+			g2.setColor(Color.BLUE);
+			String activation = Double.toString(factors[nf+2]);
+			int activateWidth = g2.getFontMetrics().stringWidth(activation);
+			g2.drawString(activation, 30+2*fieldWidth, m*(3+2*i));
+			if (activateWidth > fieldWidth) {
+				g2.clearRect(30+3*fieldWidth, m*(2+2*i), activateWidth - fieldWidth, m);
+			}
+
+			// activated input
+			g2.setColor(Color.MAGENTA);
+			String OV = Double.toString(factors[nf+3]);
+			int OVwidth = g2.getFontMetrics().stringWidth(OV);
+			g2.drawString(OV, 40+3*fieldWidth, m*(3+2*i));
+			if (OVwidth > fieldWidth) {
+				g2.clearRect(40+4*fieldWidth, m*(2+2*i), OVwidth - fieldWidth, m);
+			}
+
+			/*
+			//activation (theta)
+			Color weightColor = new Color( factors[nf+1] < 0f ? 1f : 0f, 0f, factors[nf+1] < 0f ? 0f : (float) factors[nf+1]);
+			g2.setColor(weightColor);
+			g2.fillOval(m-n, (2+i)*m-n, n*2, n*2);
+			Color inputColor = new Color( factors[nf] < 0f ? 1f : 0f, factors[nf] < 0f ? 0f : (float) (factors[nf] / Neuron.MAXWEIGHT), 0f);
 			g2.setColor(inputColor);
-			g2.fillOval(m-n, (2+i)*m-n, m+n, (2+i)*m+n);
-			Color weightColor = new Color( factors[nf] < 0f ? 1f : 0f, factors[nf] < 0f ? 0f : (float) factors[nf], 0f);
 			g2.drawLine(0,(2+i)*m,m-n,(2+i)*m);
-			nf += 2;
+			*/
+			nf += 4;
 		}
 	}
 

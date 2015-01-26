@@ -159,6 +159,11 @@ public class Bug extends Position
 	private Thread brainDebugThread;
 
 	/**
+	 * denug state
+	 */
+	private boolean debugState = false;
+
+	/**
 	 * Activate or deactivate the debug visualization for this bug
 	 */
 	public void toggleDebug() {
@@ -172,12 +177,13 @@ public class Bug extends Position
 			brainDebugThread.start();
 		}
 
-		if (brainDebugFrame.isShowing()) {
+		if (debugState) {
 			brainDebugFrame.setVisible(false);
 		} else {
 			brainDebugFrame.setVisible(true);
 		}
 		brainDebug.toggleActive();
+		debugState = !debugState;
 	}
 
 	/**
