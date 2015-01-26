@@ -1,4 +1,6 @@
 package com.programmerdan.ai.maze;
+import javax.swing.JFrame;
+import java.awt.BorderLayout;
 
 /**
  * Basic Bug, which extends {@link Position}. It has location, direction, success, failure, etc.
@@ -142,6 +144,53 @@ public class Bug extends Position
 	private NeuralNetwork brain;
 
 	/**
+	 * Debug JPanel for this bug
+	 */
+	private NeuralNetworkDisplay brainDebug;
+
+	/**
+	 * Debug JFrame
+	 */
+	private JFrame brainDebugFrame;
+
+	/**
+	 * Debug Thread
+	 */
+	private Thread brainDebugThread;
+
+	/**
+	 * Activate or deactivate the debug visualization for this bug
+	 */
+	public void toggleDebug() {
+		if (brainDebugFrame == null) {
+			brainDebugFrame = new JFrame("Bug Debug");
+			brainDebugFrame.add(brainDebug, BorderLayout.CENTER);
+
+			brainDebugFrame.setSize(500,500);
+
+			brainDebugFrame.setVisible(false);
+			brainDebugThread.start();
+		}
+
+		if (brainDebugFrame.isShowing()) {
+			brainDebugFrame.setVisible(false);
+		} else {
+			brainDebugFrame.setVisible(true);
+		}
+		brainDebug.toggleActive();
+	}
+
+	/**
+	 * Tear down debug thread.
+	 */
+	public void endDebug() {
+		brainDebug.finished();
+		if (brainDebugFrame != null) {
+			brainDebugFrame.dispose();
+		}
+	}
+
+	/**
 	 * Estimates the size of the Chromosome needed to set up this bug based on the number of
 	 *   inputs, number of hidden layers, and size of each hidden layer.
 	 * Factors in things like learning, forgetting, activation thresholds and intra-neuron weights.
@@ -224,8 +273,12 @@ public class Bug extends Position
 		else
 		{
 			build();
+
+			brainDebug = new NeuralNetworkDisplay(this.brain);
+			brainDebugThread = new Thread(brainDebug);
 		}
 	}
+
 
 	/**
 	 * Formats a Gene's Double value using the {@link fit(double)} function.

@@ -119,6 +119,11 @@ public class NeuralNetwork
 	private int factorSize;
 
 	/**
+	 * Debug param revealing the internals of the Neural Network
+	 */
+	private double[] networkFactors;
+
+	/**
 	 * This debug function returns an array of all the weights and factors in the network at the time of the call.
 	 * It probably won't be useful except where in-depth knowledge of the network construction is available.
 	 *
@@ -128,7 +133,10 @@ public class NeuralNetwork
 	 **/
 	public double[] getNetworkFactors()
 	{
-		double[] nf = new double[factorSize];
+		if (networkFactors == null) {
+			networkFactors = new double[factorSize];
+		}
+		double[] nf = networkFactors;
 
 		nf[0] = alpha;
 		nf[1] = phi;
@@ -166,8 +174,45 @@ public class NeuralNetwork
 			nf[ nfi++ ] = outputLayer[k].getTheta();
 		}
 
+		networkFactors = nf;
 
 		return nf;
+	}
+
+	/**
+	 * Returns the number of input neurons.
+	 *
+	 * @return Number of input neurons
+	 */
+	public int getNumInputs() {
+		return nInputs;
+	}
+
+	/**
+	 * Returns the number of hidden neuron layers.
+	 *
+	 * @return Number of hidden neuron layers
+	 */
+	public int getNumHidden() {
+		return nHidden;
+	}
+
+	/**
+	 * Return the number of neurons in each hidden layer.
+	 *
+	 * @return Number of neurons in each hidden layer
+	 */
+	public int getSizeHidden() {
+		return sizeHidden;
+	}
+
+	/**
+	 * Returns the number of output neurons.
+	 *
+	 * @return Number of output neurons.
+	 */
+	public int getNumOutputs() {
+		return nOutputs;
 	}
 
 	/**

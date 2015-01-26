@@ -780,6 +780,13 @@ public class Simulation extends JPanel implements MouseListener {
 				}
 			}
 
+			// Cleanup old actors
+			for (int a = 0; a < BUGS; a++) {
+				for (int b = 0; b < MAZES; b++) {
+					oldActors[a][b].endDebug();
+				}
+			}
+
 			oldActors = null;
 		}
 	}
