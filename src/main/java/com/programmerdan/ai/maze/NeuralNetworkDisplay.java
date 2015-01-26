@@ -28,6 +28,8 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 		this.network = network;
 		running = true;
 		active = false;
+
+		this.setBackground(Color.WHITE);
 	}
 
 	public boolean toggleActive() {
@@ -99,55 +101,84 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 		// Draw Input weights and Theta
 		int n = m*2;
 		int nf = 2;
-		int fieldWidth = 100;
+		int fieldWidth = 50;
 
 		for (int i = 0; i < network.getNumInputs(); i++) {
+			int sO = (int) (m*(3+1.5*i));
+			int rO = (int) (m*(2+1.5*i));
 			// raw input
 			g2.setColor(Color.GREEN);
 			String IV = Double.toString(factors[nf]);
 			int IVwidth = g2.getFontMetrics().stringWidth(IV);
-			g2.drawString(IV, 10, m*(3+2*i));
+			g2.drawString(IV, 10, sO);
 			if (IVwidth > fieldWidth) {
-				g2.clearRect(10+fieldWidth, m*(2+2*i), IVwidth - fieldWidth, m);
+				g2.clearRect(10+fieldWidth, rO, IVwidth - fieldWidth, m);
 			}
 
 			// weight
 			g2.setColor(Color.RED);
 			String weight = Double.toString(factors[nf+1]);
 			int weightWidth = g2.getFontMetrics().stringWidth(weight);
-			g2.drawString(weight, 20+fieldWidth, m*(3+2*i));
+			g2.drawString(weight, 20+fieldWidth, sO);
 			if (weightWidth > fieldWidth) {
-				g2.clearRect(20+fieldWidth*2, m*(2+2*i), weightWidth - fieldWidth, m);
+				g2.clearRect(20+fieldWidth*2, rO, weightWidth - fieldWidth, m);
 			}
 
 			// activation (theta)
 			g2.setColor(Color.BLUE);
 			String activation = Double.toString(factors[nf+2]);
 			int activateWidth = g2.getFontMetrics().stringWidth(activation);
-			g2.drawString(activation, 30+2*fieldWidth, m*(3+2*i));
+			g2.drawString(activation, 30+2*fieldWidth, sO);
 			if (activateWidth > fieldWidth) {
-				g2.clearRect(30+3*fieldWidth, m*(2+2*i), activateWidth - fieldWidth, m);
+				g2.clearRect(30+3*fieldWidth, rO, activateWidth - fieldWidth, m);
 			}
 
 			// activated input
 			g2.setColor(Color.MAGENTA);
 			String OV = Double.toString(factors[nf+3]);
 			int OVwidth = g2.getFontMetrics().stringWidth(OV);
-			g2.drawString(OV, 40+3*fieldWidth, m*(3+2*i));
+			g2.drawString(OV, 40+3*fieldWidth, sO);
 			if (OVwidth > fieldWidth) {
-				g2.clearRect(40+4*fieldWidth, m*(2+2*i), OVwidth - fieldWidth, m);
+				g2.clearRect(40+4*fieldWidth, rO, OVwidth - fieldWidth, m);
 			}
 
-			/*
-			//activation (theta)
-			Color weightColor = new Color( factors[nf+1] < 0f ? 1f : 0f, 0f, factors[nf+1] < 0f ? 0f : (float) factors[nf+1]);
-			g2.setColor(weightColor);
-			g2.fillOval(m-n, (2+i)*m-n, n*2, n*2);
-			Color inputColor = new Color( factors[nf] < 0f ? 1f : 0f, factors[nf] < 0f ? 0f : (float) (factors[nf] / Neuron.MAXWEIGHT), 0f);
-			g2.setColor(inputColor);
-			g2.drawLine(0,(2+i)*m,m-n,(2+i)*m);
-			*/
 			nf += 4;
+		}
+
+		int base = 4;
+
+		// First neuron of first hidden layer.
+		for (int i = 0; i < network.getNumInputs(); i++) {
+			int sO = (int) (m*(3+1.5*i));
+			int rO = (int) (m*(2+1.5*i));
+			// weight
+			g2.setColor(Color.RED);
+			String weight = Double.toString(factors[nf++]);
+			int weightWidth = g2.getFontMetrics().stringWidth(weight);
+			g2.drawString(weight, 50+base*fieldWidth, sO);
+			if (weightWidth > fieldWidth) {
+				g2.clearRect(50+(base+1)*fieldWidth, rO, weightWidth - fieldWidth, m);
+			}
+
+			nf ++;
+		}
+
+		// activation (theta)
+		g2.setColor(Color.BLUE);
+		String activation = Double.toString(factors[nf++]);
+		int activateWidth = g2.getFontMetrics().stringWidth(activation);
+		g2.drawString(activation, 60+(base+1)*fieldWidth, m*3);
+		if (activateWidth > fieldWidth) {
+			g2.clearRect(60+(base+2)*fieldWidth, m*2, activateWidth - fieldWidth, m);
+		}
+
+		// activated input
+		g2.setColor(Color.MAGENTA);
+		String OV = Double.toString(factors[nf++]);
+		int OVwidth = g2.getFontMetrics().stringWidth(OV);
+		g2.drawString(OV, 70+(base+2)*fieldWidth, m*3);
+		if (OVwidth > fieldWidth) {
+			g2.clearRect(70+(base+3)*fieldWidth, m*2, OVwidth - fieldWidth, m);
 		}
 	}
 
