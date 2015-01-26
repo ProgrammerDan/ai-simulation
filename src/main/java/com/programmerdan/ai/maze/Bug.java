@@ -171,7 +171,7 @@ public class Bug extends Position
 			brainDebugFrame = new JFrame("Bug Debug");
 			brainDebugFrame.add(brainDebug, BorderLayout.CENTER);
 
-			brainDebugFrame.setSize(500,500);
+			brainDebugFrame.setSize(1250,750);
 
 			brainDebugFrame.setVisible(false);
 			brainDebugThread.start();

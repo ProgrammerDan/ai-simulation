@@ -98,6 +98,122 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 		g2.drawString(LF, 10, m);
 		g2.drawString("Forgetting (\u03a6): " + factors[1], 20 + LFwidth, m);
 
+		int nf = 2;
+		int n = (int) (m*1.5);
+		int mm = 6;
+		int fieldWidth = 50;
+		int bO = 3*mm+fieldWidth; // base offset
+		double MW = Neuron.MAXWEIGHT;
+		Color clr;
+
+		for (int i = 0; i < network.getNumInputs(); i++) {
+			// raw input
+			clr = new Color( 0f, (float) ((1.0 + factors[nf++]) / 2.0), 0f);
+			g2.setColor(clr);
+
+			String IV = Double.toString(factors[nf-1]);
+			int IVwidth = g2.getFontMetrics().stringWidth(IV);
+			g2.drawString(IV, 10, n*(1+i)+m);
+			if (IVwidth > fieldWidth) {
+				g2.clearRect(10+fieldWidth, n*(1+i), IVwidth - fieldWidth, m);
+			}
+
+			g2.fillOval(bO - m/2, n*(1+i), m, m);
+
+			// weight
+			clr = new Color( (float) (( MW + factors[nf++] ) / (2.0 * MW)), 0f, 0f);
+			g2.setColor(clr);
+			g2.drawLine(bO + m/2, n*(1+i)+m/2, bO + 4*m, n*(1+i)+m/2);
+
+			// activation (theta)
+			clr = new Color( 0f, 0f, (float) (( MW + factors[nf++] ) / (2.0 * MW)));
+			g2.setColor(clr);
+			g2.fillArc(bO + 4*m, n*(1+i), m, m, 90, 180);
+
+			// adjusted input
+			float tC = (float) (( MW + factors[nf++] ) / (2.0 * MW));
+			clr = new Color( tC, 0f, tC );
+			g2.setColor(clr);
+			g2.fillArc(bO + 4*m, n*(1+i), m, m, 90, -180);
+		}
+
+		for (int j=0; j < network.getSizeHidden(); j++) {
+			for (int i=0; i < network.getNumInputs(); i++) {
+				// weight
+				clr = new Color( (float) (( MW + factors[nf++] ) / (2.0 * MW)), 0f, 0f, 0.4f);
+				g2.setColor(clr);
+				g2.drawLine(bO + 5*m, n*(1+i)+m/2, bO + (5+mm)*m, n*(1+j)+m/2);
+			}
+			// activation (theta)
+			clr = new Color( 0f, 0f, (float) (( MW + factors[nf++] ) / (2.0 * MW)));
+			g2.setColor(clr);
+			g2.fillArc(bO + (5+mm)*m, n*(1+j), m, m, 90, 180);
+
+			// inner output
+			float tC = (float) (( MW + factors[nf++] ) / (2.0 * MW));
+
+			clr = new Color( tC, 0f, tC );
+			g2.setColor(clr);
+			g2.fillArc(bO + (5+mm)*m, n*(1+j), m, m, 90, -180);
+		}
+
+		for (int k=1; k < network.getNumHidden(); k++) {
+			for (int j=0; j < network.getSizeHidden(); j++) {
+				for (int i=0; i < network.getSizeHidden(); i++) {
+					// weight
+					clr = new Color( (float) (( MW + factors[nf++] ) / (2.0 * MW)), 0f, 0f, 0.4f);
+					g2.setColor(clr);
+					g2.drawLine(bO + (5+((1+mm)*k))*m, n*(1+i)+m/2, bO + ((5+mm)+((1+mm)*k))*m, n*(1+j)+m/2);
+				}
+				// activation (theta)
+				clr = new Color( 0f, 0f, (float) (( MW + factors[nf++] ) / (2.0 * MW)));
+				g2.setColor(clr);
+				g2.fillArc(bO + ((5+mm)+((1+mm)*k))*m, n*(1+j), m, m, 90, 180);
+
+				// inner output
+				float tC = (float) (( MW + factors[nf++] ) / (2.0 * MW));
+
+				clr = new Color( tC, 0f, tC );
+				g2.setColor(clr);
+				g2.fillArc(bO + ((5+mm)+((1+mm)*k))*m, n*(1+j), m, m, 90, -180);
+			}
+		}
+
+		int sM = ((6+mm)+((1+mm)*(network.getNumHidden()-1)))*m;
+
+		for (int j=0; j < network.getNumOutputs(); j++) {
+			for (int i=0; i < network.getSizeHidden(); i++) {
+				// weight
+				clr = new Color( (float) (( MW + factors[nf++] ) / (2.0 * MW)), 0f, 0f, 0.4f);
+				g2.setColor(clr);
+				g2.drawLine(bO + sM, n*(1+i)+m/2, bO + sM+mm*m, n*(1+j)+m/2);
+			}
+			// activation (theta)
+			clr = new Color( 0f, 0f, (float) (( MW + factors[nf++] ) / (2.0 * MW)));
+			g2.setColor(clr);
+			g2.fillArc(bO + sM+mm*m, n*(1+j), m, m, 90, 180);
+
+			// final output
+			float tC = (float) (( MW + factors[nf++] ) / (2.0 * MW));
+
+			clr = new Color( tC, 0f, tC );
+			g2.setColor(clr);
+			g2.fillArc(bO + sM+mm*m, n*(1+j), m, m, 90, -180);
+
+			String OV = Double.toString(factors[nf-1]);
+			int OVwidth = g2.getFontMetrics().stringWidth(OV);
+			g2.drawString(OV, bO + sM+(mm+2)*m, n*(1+j)+m);
+			if (OVwidth > fieldWidth) {
+				g2.clearRect(bO + sM+(mm+2)*m + fieldWidth, n*(1+j), OVwidth - fieldWidth, m);
+			}
+		}
+
+		g2.setColor(Color.BLACK);
+		g2.drawString("actual: " + nf + " expected: " + factors.length, 10, n*network.getSizeHidden()+3*m);
+
+
+
+		/*
 		// Draw Input weights and Theta
 		int n = m*2;
 		int nf = 2;
@@ -180,6 +296,7 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 		if (OVwidth > fieldWidth) {
 			g2.clearRect(70+(base+3)*fieldWidth, m*2, OVwidth - fieldWidth, m);
 		}
+		*/
 	}
 
 }
