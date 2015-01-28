@@ -109,7 +109,8 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 
 		for (int i = 0; i < network.getNumInputs(); i++) {
 			// raw input
-			clr = new Color( 0f, (float) ((1.0 + factors[nf++]) / 2.0), 0f);
+			factor = (float) ( factors[nf++] / 2.0);
+			clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 			g2.setColor(clr);
 
 			String IV = Double.toString(Math.round(factors[nf-1] * 1000000.0) / 1000000.0);
@@ -118,26 +119,23 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 			if (IVwidth > fieldWidth) {
 				g2.clearRect(10+fieldWidth, n*(1+i), IVwidth - fieldWidth, m);
 			}
-
 			g2.fillOval(bO - m/2, n*(1+i), m, m);
 
 			// weight
 			factor = (float) ( factors[nf++] / (2.0 * MW));
-			clr = new Color( factor<0f?1f:0f,factor==0f?1f:0f,factor>0f?1f:0f,1f-Math.abs(factor*2f));
-			//clr = new Color( (float) (( MW + factors[nf++] ) / (2.0 * MW)), 0f, 0f);
+			clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 			g2.setColor(clr);
 			g2.drawLine(bO + m/2, n*(1+i)+m/2, bO + 4*m, n*(1+i)+m/2);
 
 			// activation (theta)
-			clr = new Color( 0f, 0f, (float) (( MW + factors[nf++] ) / (2.0 * MW)));
+			factor = (float) ( factors[nf++] / (2.0 * MW));
+			clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 			g2.setColor(clr);
 			g2.fillArc(bO + 4*m, n*(1+i), m, m, 90, 180);
 
 			// adjusted input (output into the brain
-			//float tC = (float) (( MW + factors[nf++] ) / (2.0 * MW));
-			//clr = new Color( tC, 0f, tC );
 			factor = (float) ( factors[nf++] / (2.0 * MW));
-			clr = new Color( factor<0f?1f:0f,factor==0f?1f:0f,factor>0f?1f:0f,1f-Math.abs(factor*2f));
+			clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 			g2.setColor(clr);
 			g2.fillArc(bO + 4*m, n*(1+i), m, m, 90, -180);
 		}
@@ -145,24 +143,20 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 		for (int j=0; j < network.getSizeHidden(); j++) {
 			for (int i=0; i < network.getNumInputs(); i++) {
 				// weight
-				//clr = new Color( 1f,0f,0f,1f-(float) (( MW + factors[nf++] ) / (2.0 * MW)));
 				factor = (float) ( factors[nf++] / (2.0 * MW));
-				clr = new Color( factor<0f?1f:0f,factor==0f?1f:0f,factor>0f?1f:0f,1f-Math.abs(factor*2f));
+				clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 				g2.setColor(clr);
 				g2.drawLine(bO + 5*m, n*(1+i)+m/2, bO + (5+mm)*m, n*(1+j)+m/2);
 			}
 			// activation (theta)
-			clr = new Color( 0f, 0f, (float) (( MW + factors[nf++] ) / (2.0 * MW)));
+			factor = (float) ( factors[nf++] / (2.0 * MW));
+			clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 			g2.setColor(clr);
 			g2.fillArc(bO + (5+mm)*m, n*(1+j), m, m, 90, 180);
 
 			// inner output
-			//float tC = (float) (( MW + factors[nf++] ) / (2.0 * MW));
-
-			//clr = new Color( tC, 0f, tC );
-			//clr = new Color( 1f,0f,0f,1f-(float) (( MW + factors[nf++] ) / (2.0 * MW)));
 			factor = (float) ( factors[nf++] / (2.0 * MW));
-			clr = new Color( factor<0f?1f:0f,factor==0f?1f:0f,factor>0f?1f:0f,1f-Math.abs(factor*2f));
+			clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 			g2.setColor(clr);
 			g2.fillArc(bO + (5+mm)*m, n*(1+j), m, m, 90, -180);
 		}
@@ -171,25 +165,20 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 			for (int j=0; j < network.getSizeHidden(); j++) {
 				for (int i=0; i < network.getSizeHidden(); i++) {
 					// weight
-					//clr = new Color( (float) (( MW + factors[nf++] ) / (2.0 * MW)), 0f, 0f, 0.4f);
-					//clr = new Color( 1f,0f,0f,1f-(float) (( MW + factors[nf++] ) / (2.0 * MW)));
 					factor = (float) ( factors[nf++] / (2.0 * MW));
-					clr = new Color( factor<0f?1f:0f,factor==0f?1f:0f,factor>0f?1f:0f,1f-Math.abs(factor*2f));
+					clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 					g2.setColor(clr);
 					g2.drawLine(bO + (5+((1+mm)*k))*m, n*(1+i)+m/2, bO + ((5+mm)+((1+mm)*k))*m, n*(1+j)+m/2);
 				}
 				// activation (theta)
-				clr = new Color( 0f, 0f, (float) (( MW + factors[nf++] ) / (2.0 * MW)));
+				factor = (float) ( factors[nf++] / (2.0 * MW));
+				clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 				g2.setColor(clr);
 				g2.fillArc(bO + ((5+mm)+((1+mm)*k))*m, n*(1+j), m, m, 90, 180);
 
 				// inner output
-				//float tC = (float) (( MW + factors[nf++] ) / (2.0 * MW));
-
-				//clr = new Color( tC, 0f, tC );
 				factor = (float) ( factors[nf++] / (2.0 * MW));
-				clr = new Color( factor<0f?1f:0f,factor==0f?1f:0f,factor>0f?1f:0f,1f-Math.abs(factor*2f));
-				//clr = new Color( 1f,0f,0f,1f-(float) (( MW + factors[nf++] ) / (2.0 * MW)));
+				clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 				g2.setColor(clr);
 				g2.fillArc(bO + ((5+mm)+((1+mm)*k))*m, n*(1+j), m, m, 90, -180);
 			}
@@ -200,25 +189,20 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 		for (int j=0; j < network.getNumOutputs(); j++) {
 			for (int i=0; i < network.getSizeHidden(); i++) {
 				// weight
-				//clr = new Color( (float) (( MW + factors[nf++] ) / (2.0 * MW)), 0f, 0f, 0.4f);
-				//clr = new Color( 1f,0f,0f,1f-(float) (( MW + factors[nf++] ) / (2.0 * MW)));
 				factor = (float) ( factors[nf++] / (2.0 * MW));
-				clr = new Color( factor<0f?1f:0f,factor==0f?1f:0f,factor>0f?1f:0f,1f-Math.abs(factor*2f));
+				clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 				g2.setColor(clr);
 				g2.drawLine(bO + sM, n*(1+i)+m/2, bO + sM+mm*m, n*(1+j)+m/2);
 			}
 			// activation (theta)
-			clr = new Color( 0f, 0f, (float) (( MW + factors[nf++] ) / (2.0 * MW)));
+			factor = (float) ( factors[nf++] / (2.0 * MW));
+			clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 			g2.setColor(clr);
 			g2.fillArc(bO + sM+mm*m, n*(1+j), m, m, 90, 180);
 
 			// final output
-			//float tC = (float) (( MW + factors[nf++] ) / (2.0 * MW));
-
-			//clr = new Color( tC, 0f, tC );
-			//clr = new Color( 1f,0f,0f,1f-(float) (( MW + factors[nf++] ) / (2.0 * MW)));
 			factor = (float) ( factors[nf++] / (2.0 * MW));
-			clr = new Color( factor<0f?1f:0f,factor==0f?1f:0f,factor>0f?1f:0f,1f-Math.abs(factor*2f));
+			clr = new Color( factor<0f?1f:0f,factor>0f?1f:0f,factor==0f?1f:0f,1f-Math.abs(factor*2f));
 			g2.setColor(clr);
 			g2.fillArc(bO + sM+mm*m, n*(1+j), m, m, 90, -180);
 
