@@ -57,11 +57,13 @@ class AF_ModifiedSigmoid implements ActivationFunction
 		{
 			if (_n[iC] != null)
 			{
-				_in[iC] = _n[iC].getOutput() * _w[iC];
+				_in[iC] = _n[iC].getOutput() * _w[iC] / Neuron.MAXWEIGHT;
 				X += _in[iC]; // summation.
 				//if (debug) debugOut.println("  " + String.valueOf(iC) + ": " + String.valueOf(_in[iC]));
 			}
 		}
+
+		X /= (double) _w.length; // divide by number of weights (normalize)
 
 		X -= _limit; // subtract the activation level.
 
@@ -133,10 +135,12 @@ class AF_Tanh implements ActivationFunction
 		{
 			if (_n[iC] != null)
 			{
-				_in[iC] = _n[iC].getOutput() * _w[iC];
+				_in[iC] = _n[iC].getOutput() * _w[iC]/ Neuron.MAXWEIGHT;
 				X += _in[iC]; // summation.
 			}
 		}
+
+		X /= (double) _w.length; // divide by number of weights (normalize)
 
 		X -= _limit; // subtract the activation level.
 
@@ -179,10 +183,12 @@ class AF_Sigmoid implements ActivationFunction
 		{
 			if (_n[iC] != null)
 			{
-				_in[iC] = _n[iC].getOutput() * _w[iC];
+				_in[iC] = _n[iC].getOutput() * _w[iC] / Neuron.MAXWEIGHT;
 				X += _in[iC]; // summation.
 			}
 		}
+
+		X /= (double) _w.length; // divide by number of weights (normalize)
 
 		X -= _limit; // subtract the activation level.
 
@@ -226,10 +232,12 @@ class AF_Step implements ActivationFunction
 		{
 			if (_n[iC] != null)
 			{
-				_in[iC] = _n[iC].getOutput() * _w[iC];
+				_in[iC] = _n[iC].getOutput() * _w[iC]/ Neuron.MAXWEIGHT;
 				X += _in[iC]; // summation.
 			}
 		}
+
+		X /= (double) _w.length; // divide by number of weights (normalize)
 
 		X -= _limit; // subtract the activation level.
 
@@ -272,10 +280,12 @@ class AF_Sign implements ActivationFunction
 		{
 			if (_n[iC] != null)
 			{
-				_in[iC] = _n[iC].getOutput() * _w[iC];
+				_in[iC] = _n[iC].getOutput() * _w[iC]/ Neuron.MAXWEIGHT;
 				X += _in[iC]; // summation.
 			}
 		}
+
+		X /= (double) _w.length; // divide by number of weights (normalize)
 
 		X -= _limit; // subtract the activation level.
 
@@ -318,10 +328,12 @@ class AF_Linear implements ActivationFunction
 		{
 			if (_n[iC] != null)
 			{
-				_in[iC] = _n[iC].getOutput() * _w[iC];
+				_in[iC] = _n[iC].getOutput() * _w[iC]/ Neuron.MAXWEIGHT;
 				X += _in[iC]; // summation.
 			}
 		}
+
+		X /= (double) _w.length; // divide by number of weights (normalize)
 
 		X -= _limit; // subtract the activation level.
 
