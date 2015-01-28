@@ -91,12 +91,12 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 
 		double[] factors = network.getNetworkFactors();
 
-		String LF = "Learning (\u03b1): " + factors[0];
+		String LF = "Learning (\u03b1): " + Double.toString(Math.round(factors[0] * 1000000.0) / 1000000.0);
 
 		int LFwidth = g2.getFontMetrics().stringWidth(LF);
 
 		g2.drawString(LF, 10, m);
-		g2.drawString("Forgetting (\u03a6): " + factors[1], 20 + LFwidth, m);
+		g2.drawString("Forgetting (\u03a6): " + Double.toString(Math.round(factors[1] * 1000000.0) / 1000000.0), 20 + LFwidth, m);
 
 		int nf = 2;
 		int n = (int) (m*1.5);
@@ -111,7 +111,7 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 			clr = new Color( 0f, (float) ((1.0 + factors[nf++]) / 2.0), 0f);
 			g2.setColor(clr);
 
-			String IV = Double.toString(factors[nf-1]);
+			String IV = Double.toString(Math.round(factors[nf-1] * 1000000.0) / 1000000.0);
 			int IVwidth = g2.getFontMetrics().stringWidth(IV);
 			g2.drawString(IV, 10, n*(1+i)+m);
 			if (IVwidth > fieldWidth) {
@@ -200,103 +200,12 @@ public class NeuralNetworkDisplay extends JPanel implements MouseListener, Runna
 			g2.setColor(clr);
 			g2.fillArc(bO + sM+mm*m, n*(1+j), m, m, 90, -180);
 
-			String OV = Double.toString(factors[nf-1]);
+			String OV = Double.toString(Math.round(factors[nf-1] * 1000000.0) / 1000000.0);
 			int OVwidth = g2.getFontMetrics().stringWidth(OV);
 			g2.drawString(OV, bO + sM+(mm+2)*m, n*(1+j)+m);
 			if (OVwidth > fieldWidth) {
 				g2.clearRect(bO + sM+(mm+2)*m + fieldWidth, n*(1+j), OVwidth - fieldWidth, m);
 			}
 		}
-
-		g2.setColor(Color.BLACK);
-		g2.drawString("actual: " + nf + " expected: " + factors.length, 10, n*network.getSizeHidden()+3*m);
-
-
-
-		/*
-		// Draw Input weights and Theta
-		int n = m*2;
-		int nf = 2;
-		int fieldWidth = 50;
-
-		for (int i = 0; i < network.getNumInputs(); i++) {
-			int sO = (int) (m*(3+1.5*i));
-			int rO = (int) (m*(2+1.5*i));
-			// raw input
-			g2.setColor(Color.GREEN);
-			String IV = Double.toString(factors[nf]);
-			int IVwidth = g2.getFontMetrics().stringWidth(IV);
-			g2.drawString(IV, 10, sO);
-			if (IVwidth > fieldWidth) {
-				g2.clearRect(10+fieldWidth, rO, IVwidth - fieldWidth, m);
-			}
-
-			// weight
-			g2.setColor(Color.RED);
-			String weight = Double.toString(factors[nf+1]);
-			int weightWidth = g2.getFontMetrics().stringWidth(weight);
-			g2.drawString(weight, 20+fieldWidth, sO);
-			if (weightWidth > fieldWidth) {
-				g2.clearRect(20+fieldWidth*2, rO, weightWidth - fieldWidth, m);
-			}
-
-			// activation (theta)
-			g2.setColor(Color.BLUE);
-			String activation = Double.toString(factors[nf+2]);
-			int activateWidth = g2.getFontMetrics().stringWidth(activation);
-			g2.drawString(activation, 30+2*fieldWidth, sO);
-			if (activateWidth > fieldWidth) {
-				g2.clearRect(30+3*fieldWidth, rO, activateWidth - fieldWidth, m);
-			}
-
-			// activated input
-			g2.setColor(Color.MAGENTA);
-			String OV = Double.toString(factors[nf+3]);
-			int OVwidth = g2.getFontMetrics().stringWidth(OV);
-			g2.drawString(OV, 40+3*fieldWidth, sO);
-			if (OVwidth > fieldWidth) {
-				g2.clearRect(40+4*fieldWidth, rO, OVwidth - fieldWidth, m);
-			}
-
-			nf += 4;
-		}
-
-		int base = 4;
-
-		// First neuron of first hidden layer.
-		for (int i = 0; i < network.getNumInputs(); i++) {
-			int sO = (int) (m*(3+1.5*i));
-			int rO = (int) (m*(2+1.5*i));
-			// weight
-			g2.setColor(Color.RED);
-			String weight = Double.toString(factors[nf++]);
-			int weightWidth = g2.getFontMetrics().stringWidth(weight);
-			g2.drawString(weight, 50+base*fieldWidth, sO);
-			if (weightWidth > fieldWidth) {
-				g2.clearRect(50+(base+1)*fieldWidth, rO, weightWidth - fieldWidth, m);
-			}
-
-			nf ++;
-		}
-
-		// activation (theta)
-		g2.setColor(Color.BLUE);
-		String activation = Double.toString(factors[nf++]);
-		int activateWidth = g2.getFontMetrics().stringWidth(activation);
-		g2.drawString(activation, 60+(base+1)*fieldWidth, m*3);
-		if (activateWidth > fieldWidth) {
-			g2.clearRect(60+(base+2)*fieldWidth, m*2, activateWidth - fieldWidth, m);
-		}
-
-		// activated input
-		g2.setColor(Color.MAGENTA);
-		String OV = Double.toString(factors[nf++]);
-		int OVwidth = g2.getFontMetrics().stringWidth(OV);
-		g2.drawString(OV, 70+(base+2)*fieldWidth, m*3);
-		if (OVwidth > fieldWidth) {
-			g2.clearRect(70+(base+3)*fieldWidth, m*2, OVwidth - fieldWidth, m);
-		}
-		*/
 	}
-
 }
