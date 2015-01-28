@@ -149,6 +149,16 @@ public class Neuron {
 	}
 
 	/**
+	 * Introspection function, fills the given double array with the current outputs of this neuron's inputs.
+	 */
+	public double[] getInValues(double[] inValues) {
+		for (int wC = 0; wC < inList.length; wC++) {
+			inValues[wC] = (inList[wC] == null) ? 0.0d : inList[wC].getOutput();
+		}
+		return inValues;
+	}
+
+	/**
 	 * Introspective function, allows a monitor to see what the current activation threshold is.
 	 *
 	 * @return	the double value representing this neuron's current activation threshold.
